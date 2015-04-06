@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Controller</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+
+	<link rel="stylesheet" type="text/css" href="../../normalize.css" />
+	<link rel="stylesheet" type="text/css" href="screen.css" />
+
+	<style>
+	#wrapper {
+		width: 100%;
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		right: 0px;
+		bottom: 0px;
+		}
+	#container {
+		overflow-y: auto;
+		position: relative;
+		height: 100%;
+		-webkit-overflow-scrolling: touch;
+		}
+	</style>
+<body>
+
+
+	<div id="viewport" class="">
+		<div id="debug" class="fixed"></div>
+		<div id="gutter-wrapper">
+			<div id="gutter" style="width: 100%;">
+				<div id="gutter-content-wrapper">
+					<div id="gutter-content">
+						gutter content
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="content-wrapper">
+			<div id="header" class="fixed"></div>
+			<div id="content">
+				<div id="refresh-indicator">
+					Refresh
+				</div>
+				<div id="refreshable-content">
+					<div class="slideable">
+						Default Content
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')</script>
+	<script src="../../jquery.min.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+	<script src="../../scroll.js"></script>
+    <script src="../../telligent.evolution.js"></script>
+	<script src="../scrollfix/scrollfix.js"></script>
+	<script src="../refresh/refresh.js"></script>
+	<script src="../util/util.js"></script>
+	<script src="../navigator/navigator.js"></script>
+	<script src="../navigationStack/navigationStack.js"></script>
+	<script src="../url/url.js"></script>
+	<script src="../authentication/authentication.js"></script>
+	<script src="../shell/shell.js"></script>
+	<script src="../storage/storage.js"></script>
+	<script src="../sheet/sheet.js"></script>
+	<script src="../actionSheet/actionSheet.js"></script>
+	<script src="../environment/environment.js"></script>
+	<script src="../messaging/messaging.js"></script>
+	<script src="../postlist/postlist.js"></script>
+	<script src="controller.js"></script>
+
+	<script type="text/javascript">
+
+	// mock content builder
+	function buildMockContentFor(url) {
+		return '<strong>Mock content for ' + url + ' at ' + new Date() + '</strong><br /><br />'+
+			'<a href="/a">Page A</a><br />' +
+			'<a href="/b">Page B</a><br />' +
+			'<a href="/c">Page C</a><br />' +
+			'<a href="#" class="actions">Actions</a><br /><br />' +
+			'<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+			'<p>Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+			'<p>Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+			'<a href="/a">Page A</a><br />' +
+			'<a href="/b">Page B</a><br />' +
+			'<a href="/c">Page C</a><br />' +
+			'<a href="#" class="actions">Actions</a><br /><br />' +
+			'<script>' +
+			'  var headerButton = $(\'<a href="#">Button</a>\');' +
+			'  headerButton.on(\'tap\', function(){ alert(\'hello\'); });' +
+			'  controller.setHeaderButton(headerButton);' +
+			'  controller.setHeaderContent("<em>content</em>");' +
+			'  $("a.actions").on("tap", function(){ window.controller.displaySheet({ links: [\'<a href="#" data-messagename="m1">link 1</a>\', \'<a href="#" data-messagename="m1">link 2</a>\'] }); }) ' +
+			'<\/script>' +
+
+			'<p>In pellentesque ultricies risus vitae tincidunt. Proin scelerisque rhoncus ligula quis volutpat. Aenean vel tincidunt erat. Vivamus dolor dui, venenatis id tortor in, luctus mollis purus. Sed arcu ligula, tincidunt et vulputate a, pulvinar sit amet mi. Ut egestas velit aliquet odio eleifend pellentesque. Donec pulvinar risus vitae tortor faucibus scelerisque. Nunc interdum, dui nec dictum suscipit, libero justo tincidunt ligula, eget dignissim nulla urna non tellus. Cras luctus orci non euismod luctus. Proin vitae molestie orci.</p>';
+	}
+
+	// mock nav content builder
+	function buildMockNavigationContent() {
+		return 'Mock Navigation Content at ' + new Date() + '<br /><br />' +
+			'<a href="/a">Page A</a><br />' +
+			'<a href="/b">Page B</a><br />' +
+			'<a href="/c">Page C</a><br />' +
+			'<a href="/#login">Login</a><br />' +
+			'<a href="/#logout">Logout</a>';
+	}
+
+	// mock storage
+	define('storage', function(){
+		var items = {};
+		return {
+			set: function(key, obj) {
+				items[key] = obj;
+				localStorage.setItem(key, JSON.stringify(obj));
+			},
+			get: function(key) {
+				return items[key];
+			},
+			del: function(key) {
+				delete items[key];
+			},
+			debug: function() {
+				return items;
+			},
+			reset: function() {
+				items = {};
+			}
+		};
+	});
+
+	// mock transport
+	define('transport', function(){
+		return {
+			setCredentials: function(name, value) {
+			},
+			unSetCredentials: function() {
+			},
+			load: function(url) {
+				if(url == '/navcontent') {
+					// return a promise
+					return $.Deferred(function(dfd) {
+						setTimeout(function(){
+							dfd.resolve(buildMockNavigationContent());
+						}, 250);
+					}).promise();
+				} else {
+					// return a promise
+					return $.Deferred(function(dfd) {
+						setTimeout(function(){
+							dfd.resolve(buildMockContentFor(url));
+						}, 250);
+					}).promise();
+				}
+			},
+			configure: function(isNative, domain) {
+			},
+			isNative: function() {
+				return false;
+			},
+			isLocal: function(url) {
+				return true;
+			}
+		};
+	});
+
+	require(['controller', 'messaging'], function(Controller, messaging, $, global, undef) {
+
+		var controller = new Controller({
+			enablePan: true,
+			enableRefreshButton: false,
+			enableSoftBackButton: true,
+			defaultContentUrl: '/defaultcontent',
+			navigationContentUrl: '/navcontent'
+		});
+
+		var refreshQueryKey = 0,
+			refreshQueryVal = 0;
+
+		// capture a global reference to this controller for the test to talk to
+		global.controller = controller;
+
+		$(window).on({
+			contentRefreshing: function(e) { console.log('contentRefreshing'); },
+			contentRefreshed: function(e) { console.log('contentRefreshed'); },
+			navigationLoading: function(e) { console.log('navigationLoading'); },
+			navigationLoaded: function(e) { console.log('navigationLoaded'); },
+			contentLoading: function(e, data) { console.log('contentLoading: ' + data.url); },
+			contentLoaded: function(e, data) {
+				/*
+				var headerButton = $('<a href="#">Hello</a>');
+				headerButton.on('tap', function(){ alert('hello world'); });
+				controller.setHeaderButton(headerButton);
+				*/
+				console.log('contentLoaded: ' + data.url);
+				// try passing a refresh query key/val pair
+				controller.addRefreshParameter('key' + refreshQueryKey++, 'val' + refreshQueryVal++);
+			},
+			navigationOpening: function(e) { console.log('navigationOpening'); },
+			navigationOpened: function(e) { console.log('navigationOpened'); },
+			navigationClosing: function(e) { console.log('navigationClosing'); },
+			navigationClosed: function(e) { console.log('navigationClosed'); }
+		});
+
+        messaging.subscribe('m1', function(data) {
+        	console.log('m1 message received');
+        	console.log($(data.target));
+        });
+
+	}, jQuery, window);
+	</script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:UserBookmarks_Name}" version="7.0.0.1" instanceIdentifier="c3b4a8778b3c4d988e25c8fe886da9e0" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="user-bookmarks">
+	<contentScript>
+<![CDATA[
+
+#set ($userId = false)
+#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+#set ($user = false)
+#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+#if (!$user)
+	$core_v2_widget.Hide()
+#end
+
+## hide widget if the contextual user hasn't enabled favorite sharing
+#if (!$user.EnableFavoriteSharing && $user.Id != $core_v2_user.Accessing.Id)
+	$core_v2_widget.Hide()
+#end
+
+#set($pageSize = $core_v2_widget.GetIntValue('pageSize', 5))
+#set($pageIndex = 0)
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">$user.DisplayName</a>
+		<h1>$!core_v2_language.FormatString($core_v2_language.GetResource('Core_UserBookmarks_Title'), $user.DisplayName)</h1>
+	</div>
+	<div class="avatar">$!core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 40, 40, "%{ alt = $user.DisplayName, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+
+#set($filter = false)
+#set($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+#if (!$filter)
+	#set($filter = 'content')
+#end
+<div class="ui-links filters" data-minlinks="50" data-animate="true">
+	<ul class="activity-filters">
+		<li><a href="#" data-filter="content" #if($filter == 'content') data-selected #end>$core_v2_language.GetResource('Core_UserBookmarks_ContentLink')</a></li>
+		<li><a href="#" data-filter="applications" #if($filter == 'applications') data-selected #end>$core_v2_language.GetResource('Core_UserBookmarks_ApplicationsLink')</a></li>
+		<li><a href="#" data-filter="groups" #if($filter == 'groups') data-selected #end>$core_v2_language.GetResource('Core_UserBookmarks_GroupsLink')</a></li>
+		<li><a href="#" data-filter="people" #if($filter == 'people') data-selected #end>$core_v2_language.GetResource('Core_UserBookmarks_PeopleLink')</a></li>
+	</ul>
+</div>
+
+## load and render bookmarks
+<div class="post-list bookmarks $filter">
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.userBookmarks.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+		filter: '$filter',
+		moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+		pageSize: $pageSize
+		});
+	});
+});
+</script>
+
+]]>
+</contentScript>
+
+<headerScript></headerScript>
+<configuration>
+	<propertyGroup id="options">
+		<property id="pageSize" dataType="int" defaultValue="5" />
+	</propertyGroup>
+</configuration>
+<languageResources>
+	<language key="en-us">
+		<resource name="UserBookmarks_Name">Bookmarks</resource>
+		<resource name="Core_UserBookmarks_ContentLink">Content</resource>
+		<resource name="Core_UserBookmarks_ApplicationsLink">Applications</resource>
+		<resource name="Core_UserBookmarks_GroupsLink">Groups</resource>
+		<resource name="Core_UserBookmarks_PeopleLink">People</resource>
+		<resource name="Core_UserBookmarks_Title">Bookmarks</resource>
+		<resource name="Core_UserBookmarks_No_Bookmarks">{0} has no bookmarks of this type. </resource>
+	</language>
+</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

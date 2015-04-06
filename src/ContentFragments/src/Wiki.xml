@@ -1,0 +1,103 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:Wiki_Name}" version="7.0.0.1" instanceIdentifier="b763444371d5475e8f7a9a5fa4d184b6" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="wiki">
+		<contentScript>
+		<![CDATA[
+#set($wikiId = false)
+#set($wikiId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('WikiId')))
+#if (!$wikiId)
+	$core_v2_widget.Hide()
+#end
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($wiki = $core_v2_wiki.Get("%{Id=$wikiId}"))
+#set($defaultPage = $core_v2_wikiPage.Get("%{PageKey='DefaultWikiPage',WikiId=$wikiId}"))
+<div class="post full topic">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($wiki.Group.Url)">$wiki.Group.Name</a>
+	</div>
+	<h1>$defaultPage.Title</h1>
+	<div class="details">
+		<div class="date">$core_v2_language.FormatAgoDate($defaultPage.Date)</div>
+	</div>
+	<div class="content user-generated-content">
+		$mobile_v1_dataFormat.Detect($defaultPage.Body())
+	</div>
+
+	#set($showLikes = false)
+	#if($accessingUserIsRegistered && $core_v2_like.CanLike($defaultPage.ContentId, $core_v2_wikiPage.ContentTypeId))
+		#set($showLikes = true)
+	#end
+
+	<div class="actions ui-links" data-maxlinks="#if($showLikes)1#else 0#end">
+		#if ($showLikes)
+			<li class="action-like">
+				#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+				$core_v2_ui.Like($defaultPage.ContentId, $core_v2_wikiPage.ContentTypeId, "%{ Format = $format }")
+			</li>
+		#end
+
+		<li><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage-edit',$defaultPage.Id))">Edit</a></li>
+
+		#if ($accessingUserIsRegistered && $core_v2_bookmark.CanBookmark($defaultPage.ContentId, $core_v2_wikiPage.ContentTypeId))
+			<li class="action-bookmark">
+				$core_v2_ui.Bookmark($defaultPage.ContentId, $core_v2_wikiPage.ContentTypeId)
+			</li>
+		#end
+
+		<li class="action-more"><a href="#" data-more></a></li>
+		<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+	</div>
+</div>
+
+
+## load and render wiki
+<div class="post-list wikis">
+	#set($wikipages = $core_v2_wikiToc.List($wikiId))
+	#foreach($wikipage in $wikipages)
+		<div class="post-list-item" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage',$wikipage.Id))">
+			<div class="post full without-avatar">
+				<div class="content">
+					<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage',$wikipage.Id))">$wikipage.Title</a>
+				</div>
+			</div>
+		</div>
+	#end
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.wiki.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			postUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('wiki-addwikipage', $wikiId))',
+			canPost: #if($core_v2_nodePermission.Get("wikis", $wikiId, "Wiki_CreatePage").IsAllowed) true#else false#end
+		});
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+		  	<resource name="Wiki_Name">Wiki</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="delete">Delete</resource>
+			<resource name="cancel">Cancel</resource>
+			<resource name="post">New</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

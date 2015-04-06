@@ -1,0 +1,28 @@
+<div class="post-list-item content-item message" data-replyid="$message.Id.ToString()">
+	<div class="post full">
+		<div class="details">
+			<div class="date">$core_v2_language.FormatAgoDate($message.CreatedDate)</div>
+			<div class="avatar">
+				#if ($message.Author.ProfileUrl)
+            				<a href="$core_v2_encoding.HtmlAttributeEncode($message.Author.ProfileUrl)" class="internal-link view-user-profile">
+                				$core_v2_ui.GetResizedImageHtml($message.Author.AvatarUrl, 24, 24, "%{border='0', alt=$message.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+            				</a>
+        			#else
+            				$core_v2_ui.GetResizedImageHtml($message.Author.AvatarUrl, 24, 24, "%{border='0', alt=$message.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+        			#end
+			</div>
+			<div class="author">
+				#if ($message.Author.ProfileUrl)
+		            		<a href="$core_v2_encoding.HtmlAttributeEncode($message.Author.ProfileUrl)" class="internal-link view-user-profile">
+		                		$message.Author.DisplayName
+		            		</a>
+		        	#else
+		            		$message.Author.DisplayName
+		        	#end
+			</div>
+		</div>
+		<div class="content user-generated-content">
+			$message.RenderedBody
+		</div>
+	</div>
+</div>

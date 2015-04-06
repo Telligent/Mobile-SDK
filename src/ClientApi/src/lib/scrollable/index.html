@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scrollable</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta "mobile-web-app-status-bar-style" content="black" />
+    <meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css" />
+    <link rel="stylesheet" type="text/css" href="screen.css" />
+<body>
+    <div id="wrapper">
+        <div id="content">
+            <p>Fusce lacinia odio et felis congue eleifend. Phasellus at est orci, eu dapibus massa. Nam id magna porta risus</p>
+        </div>
+    </div>
+
+    <script src="../../jquery.min.js"></script>
+    <script src="../../define.js"></script>
+    <script src="../../testlog.js"></script>
+    <script src="../../scroll.js"></script>
+    <script src="../../telligent.evolution.js"></script>
+    <script src="../scrollfix/scrollfix.js"></script>
+    <script src="../util/util.js"></script>
+    <script src="../sheet/sheet.js"></script>
+    <script src="../messaging/messaging.js"></script>
+    <script src="scrollable.js"></script>
+    <script type="text/javascript">
+    require(['scrollable','scrollfix','messaging'],
+        function(scrollable, scrollfix, messaging, $, global, undef) {
+
+            var wrapper = $('#wrapper'),
+                content = $('#content'),
+                testScrollEndMessageName = 'message_name';
+
+            scrollfix.preventBounce(wrapper);
+
+            // raise scroll end messages the same as the shell would
+            wrapper.on('scrollend', function(){
+                console.log('what');
+                messaging.publish(testScrollEndMessageName)
+            })
+
+            scrollable.register('content', {
+                element: function() { return $('#content') },
+                container: $('#wrapper'),
+                load: function(pageIndex, complete, error) {
+                    console.log('loading page for pageIndex: ' + pageIndex);
+                    setTimeout(function(){
+                        complete('new page for ' + pageIndex);
+                    }, 500)
+                },
+                complete: function(newContent) {
+                    content.append('<p>' + newContent + '</p>');
+                },
+                initialPageIndex: 0 ,
+                preFillAttempts: 50,
+                scrollEndMessage: testScrollEndMessageName,
+                buildIndicator: function() {
+                    var elm = $('<div class="scrollable-loading-indicator"><span class="icon cw"></span></div>').css({
+                        'height': 50,
+                        'background-color': 'yellow'
+                    });
+                    return elm;
+                }
+            });
+
+        }, jQuery, window);
+    </script>
+</body>
+</html>

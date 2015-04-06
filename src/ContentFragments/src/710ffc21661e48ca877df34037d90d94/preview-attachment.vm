@@ -1,0 +1,23 @@
+## Loads Attachment Preview
+#set($messageBody = $core_v2_page.GetFormValue('w_messageBody'))
+#set($groupId = $core_v2_utility.ParseInt($core_v2_page.GetFormValue('w_groupId')))
+
+#set ($attachedFileName = false)
+#set ($attachedFileName = $core_v2_page.GetFormValue('w_attachedFileName'))
+#set ($attachedFileContext = false)
+#set ($attachedFileContext = $core_v2_page.GetFormValue('w_attachedFileContext'))
+#set ($attachedUrl = false)
+#if ($attachedFileName.length > 0 && $attachedFileContext.length > 0)
+    #set ($attachedFile = false)
+	#set ($attachedFile = $core_v2_uploadedFile.Get($attachedFileContext, $attachedFileName))
+	#if ($attachedFile)
+	   #set ($attachedUrl = $attachedFile.Url)
+	#end
+#end
+
+#set ($options = "%{ GroupId = $groupId }")
+#if ($attachedUrl)
+    $options.Add('AttachedUrl', $attachedUrl)
+#end
+
+$core_v2_statusMessage.PreviewAttachment($messageBody, $options)

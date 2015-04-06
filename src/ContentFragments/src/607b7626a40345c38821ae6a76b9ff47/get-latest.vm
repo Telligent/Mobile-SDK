@@ -1,0 +1,31 @@
+##
+## Ajax callback for loading more messages
+##
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+    #set ($accessingUserIsRegistered = true)
+#end
+
+#set($conversationId = false)
+#set($conversationId = $core_v2_utility.ParseGuid($mobile_v1_urlToken.Value('ConversationId')))
+#if (!$conversationId)
+	$core_v2_widget.Hide()
+#end
+
+#set($messages = $core_v2_conversationMessage.List($conversationId, "%{PageSize=5,PageIndex=0}"))
+#set($lastPageIndex = $messages.TotalCount / 5)
+#if ($lastPageIndex * 5 >= $messages.TotalCount)
+	#set($lastPageIndex = $lastPageIndex - 1)
+#end
+#set($pageIndex = $lastPageIndex)
+#if ($pageIndex >= 1)
+	#set($messages = $core_v2_conversationMessage.List($conversationId, "%{PageSize=5,PageIndex=$pageIndex}"))
+#end
+
+#foreach($message in $messages)
+#each
+	$core_v2_widget.ExecuteFile('render-reply.vm')
+#end
+

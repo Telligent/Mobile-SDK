@@ -1,0 +1,99 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:WikiPage_Name}" version="7.0.0.1" instanceIdentifier="70bdfebf5e85427c8718871941e88347" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="wikipage">
+		<contentScript>
+		<![CDATA[
+#set($wikiPageId = false)
+#set($wikiPageId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('WikiPageId')))
+#if (!$wikiPageId)
+	$core_v2_widget.Hide()
+#end
+#set($wikiPage = $core_v2_wikiPage.Get("%{Id = $wikiPageId}"))
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+<div class="post topic full">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($wikiPage.Application.Container.Url)">$wikiPage.Application.Container.HtmlName('Web')</a>
+		#set($parentPage = false)
+		#set($parentPage = $core_v2_wikiPage.Get("%{Id = $wikiPage.ParentPageId}"))
+		#if (!$parentPage)
+			#set($parentPage = $core_v2_wikiPage.Get("%{PageKey='DefaultWikiPage',WikiId=$wikiPage.WikiId}"))
+			#if ($parentPage)
+				<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wiki', $wikiPage.WikiId))">$parentPage.Title</a>
+			#end
+		#else
+			<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage', $parentPage.Id))">$parentPage.Title</a>
+		#end
+	</div>
+	<h1>$wikiPage.Title</h1>
+	<div class="details">
+		<div class="date">$core_v2_language.FormatAgoDate($wikiPage.Date)</div>
+	</div>
+	<div class="content user-generated-content">
+		$mobile_v1_dataFormat.Detect($wikiPage.Body())
+	</div>
+
+	#set($showLikes = false)
+	#if($accessingUserIsRegistered && $core_v2_like.CanLike($wikiPage.ContentId, $core_v2_wikiPage.ContentTypeId))
+		#set($showLikes = true)
+	#end
+
+	<div class="actions ui-links" data-maxlinks="#if($showLikes)1#else 0#end">
+		#if ($showLikes)
+			<li class="action-like">
+				#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+				$core_v2_ui.Like($wikiPage.ContentId, $core_v2_wikiPage.ContentTypeId, "%{ Format = $format }")
+			</li>
+		#end
+
+		#if ($accessingUserIsRegistered)
+			<li><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage-edit',$wikiPageId))">$core_v2_language.GetResource('edit')</a></li>
+		#end
+		#if ($accessingUserIsRegistered && $core_v2_bookmark.CanBookmark($wikiPage.ContentId, $core_v2_wikiPage.ContentTypeId))
+			<li class="action-bookmark">
+				$core_v2_ui.Bookmark($wikiPage.ContentId, $core_v2_wikiPage.ContentTypeId)
+			</li>
+		#end
+		<li class="action-moderate">$core_v2_ui.Moderate($wikiPage.ContentId, $core_v2_wikiPage.ContentTypeId)</li>
+
+		<li class="action-more"><a href="#" data-more></a></li>
+		<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+	</div>
+</div>
+
+
+#if($wikiPage.ChildPageCount > 0)
+	<div class="post-list">
+	#set($childWikis = $core_v2_utility.FlattenHierarchy($core_v2_wikiToc.List($wikiPage.WikiId, $wikiPage.Id), 'Children', "%{ExpandToLevel=1}"))
+	#foreach($childWiki in $childWikis)
+		#set($childWikiPage = $core_v2_wikiPage.Get("%{Id = $childWiki.Item.Id}"))
+		<div class="post-list-item" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage', $childWikiPage.Id))">
+			<div class="post full without-avatar">
+				<div class="content">
+					<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wikipage', $childWikiPage.Id))">$childWikiPage.Title</a>
+				</div>
+			</div>
+		</div>
+	#end
+	</div>
+#end
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+		  	<resource name="WikiPage_Name">Wiki Page</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="delete">Delete</resource>
+			<resource name="cancel">Cancel</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

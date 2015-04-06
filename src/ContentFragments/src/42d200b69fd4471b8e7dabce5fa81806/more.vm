@@ -1,0 +1,20 @@
+##
+## Ajax callback for loading more blog posts
+##
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set ($pageSize = $core_v2_page.GetQueryStringValue('w_pageSize'))
+
+#set($blogId = false)
+#set($blogId = $mobile_v1_urlToken.Value('BlogId'))
+#if ($blogId)
+	#set($blogId = $core_v2_utility.ParseInt($blogId))
+#else
+	#set($userId = false)
+	#set($userId = $mobile_v1_urlToken.Value('UserId'))
+	#if ($userId)
+		#set($userId = $core_v2_utility.ParseInt($userId))
+	#else
+		$core_v2_widget.Hide()
+	#end
+#end
+$core_v2_widget.ExecuteFile('list.vm')

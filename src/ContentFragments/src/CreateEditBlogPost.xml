@@ -1,0 +1,112 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:CreateEditBlogPost_Name}" version="7.0.0.1" instanceIdentifier="48d3b46f0c164d9eb36ef4ab8dabaa2f" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="create-edit-blog-post">
+		<contentScript>
+			<![CDATA[
+#set ($pageName = $mobile_v1_url.Current)
+#set ($contentTypeId = $core_v2_blogPost.ContentTypeId)
+
+#set ($title = "")
+#set ($body = "")
+
+#set ($blogId = false)
+#set ($blogPostId = false)
+#set ($blogPost = false)
+
+
+
+#if ($pageName == 'blog-addblogpost')
+
+	#set($blogId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('BlogId')))
+
+#elseif($pageName == 'blogpost-edit')
+
+
+	#set($blogPostId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('BlogPostId')))
+
+	#set ($blogPost = $core_v2_blogPost.Get("%{Id=$blogPostId}"))
+	#if (!$blogPost)
+		$core_v2_widget.Hide()
+	#end
+
+	#set($blogId = $blogPost.BlogId)
+	#set($title = $blogPost.Title)
+	#set($body = $blogPost.Body('raw'))
+
+#end
+
+#if (!$blogId)
+	$core_v2_widget.Hide()
+#end
+
+#set ($blog = false)
+#set ($blog = $core_v2_blog.Get("%{Id= $blogId}"))
+
+#if (!$blog)
+	$core_v2_widget.Hide()
+#end
+
+
+
+#set ($bodyId = $core_v2_widget.UniqueId('PostBody'))
+#set ($titleId = $core_v2_widget.UniqueId('Title'))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($blog.Group.Url)">$blog.Group.Name</a><a href="$core_v2_encoding.HtmlAttributeEncode($blog.Url)">$blog.Name</a>
+		<h1>
+			#if ($blogPost)
+				$blogPost.Title
+			#else
+				$core_v2_language.GetResource('new_post')
+			#end
+		</h1>
+	</div>
+</div>
+<fieldset>
+
+	<div class="form-field text">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($subjectId)">$core_v2_language.GetResource('title')</label>
+		<input type="text" maxlength="256" id="$core_v2_encoding.HtmlAttributeEncode($titleId)" value="$!core_v2_encoding.HtmlAttributeEncode($title)" />
+	</div>
+
+	<div class="form-field editor">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.GetResource('body')</label>
+		$core_v2_editor.Render('PostBody', "%{Width='100%', Height='60px', Value=$body, ContentTypeId=$contentTypeId}")
+	</div>
+
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+	jQuery.telligent.evolution.widgets.createEditBlogPost.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			blogId: $blogId,
+			blogPostId: #if ($blogPost) $blogPost.Id #else null #end,
+			getBodyContent: function() { return $core_v2_editor.GetContentScript('PostBody') },
+			titleInput: '#$core_v2_encoding.JavascriptEncode($titleId)',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			editLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('edit'))'
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript></headerScript>
+		<languageResources>
+		  <language key="en-us">
+			<resource name="CreateEditBlogPost_Name">Create Edit Blog Post</resource>
+			<resource name="title">Title</resource>
+			<resource name="body">Description</resource>
+			<resource name="post">Post</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="new_post">New post</resource>
+		  </language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

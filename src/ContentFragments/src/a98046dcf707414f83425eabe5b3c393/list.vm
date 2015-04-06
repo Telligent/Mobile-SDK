@@ -1,0 +1,29 @@
+#set($wikis = $core_v2_wiki.List("%{GroupId=$groupId,PageIndex=$pageIndex,PageSize=5}"))
+#if($wikis.TotalCount == 1)
+	#set($oneWiki = $core_v2_wiki.Get("%{GroupId = $groupId}"))
+	$mobile_v1_url.Format('wiki',$oneWiki.Id)
+#end
+#foreach($wiki in $wikis)
+#each
+	<div class="post-list-item content-item wiki" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wiki', $wiki.Id))">
+		<div class="post without-avatar">
+			<div class="details">
+				#if ($wiki.LastModifiedUtcDate)
+					<div class="date">$core_v2_language.FormatAgoDate($wiki.LastModifiedUtcDate)</div>
+				#end
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('wiki', $wiki.Id))">$wiki.Name</a>
+				<div>$!wiki.Description</div>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item wikis"><div class="message norecords">$core_v2_language.GetResource('no_wikis')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($wikis.TotalCount > (($wikis.PageIndex + 1) * $wikis.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

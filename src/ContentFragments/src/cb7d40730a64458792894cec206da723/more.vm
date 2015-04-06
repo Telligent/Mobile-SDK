@@ -1,0 +1,19 @@
+##
+## Ajax callback for loading more pre-rendered stories
+##
+#set ($filterType = $core_v2_page.GetQueryStringValue('FilterType'))
+#set ($filterIndex = $core_v2_page.GetQueryStringValue('FilterIndex'))
+#set ($pageSize = $core_v2_utility.ParseInt($core_v2_page.GetQueryStringValue('PageSize')))
+#set ($groupId = $core_v2_utility.ParseInt($core_v2_page.GetQueryStringValue('GroupId')))
+#set ($endDate = false)
+#if ($core_v2_page.GetQueryStringValue('EndDate').length > 0)
+	#set($endDate = $core_v2_utility.ParseDate($core_v2_page.GetQueryStringValue('EndDate')))
+#end
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+$core_v2_widget.ExecuteFile('stream.vm')

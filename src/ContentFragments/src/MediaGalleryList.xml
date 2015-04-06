@@ -1,0 +1,52 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:MediaGalleryList_Name}" version="7.0.0.1" instanceIdentifier="dd90b05c6d334331b0046de16705e717" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="group-gallery">
+		<contentScript>
+		<![CDATA[
+#set($groupId = false)
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#if (!$groupId)
+	$core_v2_widget.Hide()
+#end
+
+#set($group = $core_v2_group.Get("%{Id=$groupId}"))
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+		<h1>$core_v2_language.GetResource('media_gallery')</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 40, 40, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+## load and render media galleries
+<div class="post-list galleries">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.mediaGalleryList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))'
+		});
+	});
+})
+</script>
+
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="MediaGalleryList_Name">Media Gallery List</resource>
+			<resource name="media_gallery">Media Galleries</resource>
+			<resource name="no_gallery">No Gallery</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

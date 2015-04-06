@@ -1,0 +1,129 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:BlogPost_Name}" version="7.0.0.1" instanceIdentifier="4f1a3378c9f84f129702bef3fab4eefc" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="blogpost">
+		<contentScript>
+		<![CDATA[
+#set($postId = false)
+#set($postId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('BlogPostId')))
+#set($post = $core_v2_blogPost.Get("%{Id = $postId}"))
+#if (!$post)
+	$core_v2_widget.Hide()
+#end
+#set($blog = $core_v2_blog.Get("%{Id = $post.BlogId}"))
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+<div class="post topic full">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($blog.Group.Url)">$blog.Group.Name</a>
+		<a href="$core_v2_encoding.HtmlAttributeEncode($blog.Url)">$blog.Name</a>
+	</div>
+	<h1>$post.Title</h1>
+	<div class="details">
+		<div class="date">$core_v2_language.FormatAgoDate($post.PublishedDate)</div>
+		<div class="avatar">
+			#if ($post.Author.ProfileUrl)
+				<a href="$core_v2_encoding.HtmlAttributeEncode($post.Author.ProfileUrl)" class="internal-link view-user-profile">
+					$core_v2_ui.GetResizedImageHtml($post.Author.AvatarUrl, 24, 24, "%{border='0', alt=$post.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+				</a>
+			#else
+				$core_v2_ui.GetResizedImageHtml($post.Author.AvatarUrl, 24, 24, "%{border='0', alt=$post.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+			#end
+		</div>
+		<div class="author">
+			#if ($post.Author.ProfileUrl)
+				<a href="$core_v2_encoding.HtmlAttributeEncode($post.Author.ProfileUrl)" class="internal-link view-user-profile">
+					$post.Author.DisplayName
+				</a>
+			#else
+				$post.Author.DisplayName
+			#end
+		</div>
+	</div>
+	<div class="content user-generated-content">
+		$mobile_v1_dataFormat.Detect($post.Body('Web'))
+		#if ($post.File)
+			<p><a href="$core_v2_encoding.HtmlAttributeEncode($post.File.FileUrl)" class="internal-link download-attachment">$post.File.FileName</a></p>
+		#end
+	</div>
+
+	#set ($canEditBlogPost = false)
+	#set ($canEditBlogPost = $core_v2_nodePermission.Get("blogs", $post.BlogId, "Blog_ModifyPost").IsAllowed)
+
+	#set ($canDeleteBlogPost = false)
+	#set ($canDeleteBlogPost = $core_v2_nodePermission.Get("blogs", $post.BlogId, "Blog_DeletePost").IsAllowed)
+
+	#set($showLikes = false)
+	#if($accessingUserIsRegistered && $core_v2_like.CanLike($post.ContentId, $core_v2_blogPost.ContentTypeId))
+		#set($showLikes = true)
+	#end
+
+	<div class="actions ui-links" data-maxlinks="#if($showLikes)1#else 0#end">
+			#if ($showLikes)
+				<li class="action-like">
+					#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+					$core_v2_ui.Like($post.ContentId, $core_v2_blogPost.ContentTypeId, "%{ Format = $format }")
+				</li>
+			#end
+
+			#if ($canEditBlogPost)
+				<li>
+					<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('blogpost-edit', $post.Id))">$core_v2_language.GetResource('edit')</a>
+				</li>
+			#end
+			#if ($canDeleteBlogPost)
+				<li>
+					<a href="#" data-messagename="blogpost.delete">$core_v2_language.GetResource('delete')</a>
+				</li>
+			#end
+
+			#if ($accessingUserIsRegistered && $core_v2_bookmark.CanBookmark($post.ContentId, $core_v2_blogPost.ContentTypeId))
+				<li class="action-bookmark">
+					$core_v2_ui.Bookmark($post.ContentId, $core_v2_blogPost.ContentTypeId)
+				</li>
+			#end>
+			<li class="action-moderate">$core_v2_ui.Moderate($post.ContentId, $core_v2_blogPost.ContentTypeId)</li>
+
+			<li class="action-more"><a href="#" data-more></a></li>
+			<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+	</div>
+</div>
+
+$mobile_v1_ui.Comments($post.ContentId, $core_v2_blogPost.ContentTypeId, "%{ CanFlagAsAbusive = $accessingUserIsRegistered, AccessingUserId = $accessingUser.Id }")
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.blogPost.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			blogUrl: '$core_v2_encoding.JavascriptEncode($blog.Url)',
+			blogId: '$blog.Id',
+			postId: '$post.Id',
+			postDeleteConfirmation: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post_delete_confirmation'))'
+		});
+	});
+})
+</script>
+
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="BlogPost_Name">Blog Post</resource>
+		<resource name="edit">Edit</resource>
+		<resource name="delete">Delete</resource>
+		<resource name="cancel">Cancel</resource>
+		<resource name="post_delete_confirmation">Are you sure you want to delete this post?</resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

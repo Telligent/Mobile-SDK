@@ -1,0 +1,90 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:CreateConversation_Name}" version="7.0.0.1" instanceIdentifier="e87b6c2fb05a48718565338e6f5243d2" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="create-conversation">
+		<contentScript>
+			<![CDATA[
+#set($userId = false)
+#set($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+
+#set($user = false)
+#set($user = $core_v2_user.Get("%{Id=$userId}"))
+#if ($user && !$core_v2_urls.AddConversation($userId))
+	<div class="message error">
+		$core_v2_language.GetResource('message_not_allowed')
+	</div>
+#end
+
+#set ($bodyId = $core_v2_widget.UniqueId('Body'))
+#set ($subjectId = $core_v2_widget.UniqueId('Subject'))
+#set ($recipientsId = $core_v2_widget.UniqueId('Recipients'))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('conversations'))">$core_v2_language.GetResource('conversations')</a>
+		<h1>$core_v2_language.GetResource('create_conversation')</h1>
+	</div>
+</div>
+<fieldset>
+
+	## Participants
+	<div class="form-field username lookup">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.GetResource('participants')</label>
+		<input type="text" id="$core_v2_encoding.HtmlAttributeEncode($recipientsId)" value="#if ($user)$user.Username#end" />
+	</div>
+
+	## Subject
+	<div class="form-field text">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($subjectId)">$core_v2_language.GetResource('subject')</label>
+		<input type="text" maxlength="256" id="$core_v2_encoding.HtmlAttributeEncode($subjectId)" />
+	</div>
+
+	## Body
+	<div class="form-field textarea">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.GetResource('body')</label>
+		<textarea id="$core_v2_encoding.HtmlAttributeEncode($bodyId)"></textarea>
+	</div>
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.createConversation.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			addConversationUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('add-conversation.vm'))',
+			lookupUserUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('lookup-user.vm'))',
+			bodyInput: '#$core_v2_encoding.JavascriptEncode($bodyId)',
+			recipientInput: '#$core_v2_encoding.JavascriptEncode($recipientsId)',
+			subjectInput: '#$core_v2_encoding.JavascriptEncode($subjectId)',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			selectedUserDisplayName:#if($user) '$core_v2_encoding.JavascriptEncode($user.DisplayName)'#else null#end,
+			userLookupLoadingText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('participants_loading'))',
+			noUserMatchesText:'$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('participants_nomatch'))'
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript></headerScript>
+		<languageResources>
+		  <language key="en-us">
+			<resource name="CreateConversation_Name">Create Conversation</resource>
+			<resource name="conversations">Inbox</resource>
+			<resource name="subject">Subject</resource>
+			<resource name="body">Message</resource>
+			<resource name="participants">Send to</resource>
+			<resource name="post">Send</resource>
+			<resource name="message_not_allowed">The person you attempted to send a message to does not accept messages.</resource>
+			<resource name="participants_loading">Finding matching people...</resource>
+			<resource name="participants_nomatch">No matches accepting messages could be found</resource>
+			<resource name="create_conversation">New private message</resource>
+		  </language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,5 @@
+##
+## Ajax callback for loading more conversations
+##
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+$core_v2_widget.ExecuteFile('list.vm')

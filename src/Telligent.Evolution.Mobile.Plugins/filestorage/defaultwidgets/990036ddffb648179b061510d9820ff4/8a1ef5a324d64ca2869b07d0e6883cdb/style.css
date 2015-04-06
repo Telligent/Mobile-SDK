@@ -1,0 +1,20 @@
+body.with-custom-smart-banner { padding-top: 124px !important; }
+body.with-custom-smart-banner .banner.site.with-site-navigation  { top: 80px; }
+body.with-custom-smart-banner .content-fragment.smart-banner { display: none; background-color: #EEE; height: 80px; padding: 10px 10px 10px 0px; font-family: 'Helvetica Neue', 'Helveica', Arial, sans-serif; width: 100%; }
+@media (max-width: 570px) {
+    body.with-custom-smart-banner .content-fragment.smart-banner { position: fixed; top: 0px; z-index: 20; }
+}
+.content-fragment.smart-banner .smart-banner-wrapper { padding-left: 100px; position: relative; }
+.content-fragment.smart-banner a { border: 0px; color: #333; border-radius: 0px; }
+.content-fragment.smart-banner .icon  { border-radius: 12px; position: absolute; left: 30px; }
+.content-fragment.smart-banner .icon img { border-radius: 12px; }
+.content-fragment.smart-banner .view { margin: 0px; float: none; width: auto; }
+.content-fragment.smart-banner .view.open { margin: 17px 0 5px 5px; right: 0px; display:inline-block; float:right; width:auto; padding:3px 6px 3px 6px; border-radius: 4px; border: 1px solid #0099dc; color: #0099dc; font-size:.9em; text-transform: uppercase; line-height: 1.2em; }
+.content-fragment.smart-banner .view.install { margin: 5px 0 0 0; clear: right; }
+.content-fragment.smart-banner .view.redirect { margin: 0 0 0 0; }
+.content-fragment.smart-banner .name,
+.content-fragment.smart-banner .description { font-size: .9em; line-height: 1.1em; display: block; }
+.content-fragment.smart-banner .name { margin-top: 0px; padding-top: 5px; }
+.content-fragment.smart-banner .description { color: #666; }
+.content-fragment.smart-banner .dismiss { display: inline-block; width: 30px; height: 30px; text-indent: 200%; white-space: nowrap; overflow: hidden; position: absolute; top: 10px; left: 0px; color: #666; }
+.content-fragment.smart-banner .dismiss:before { text-indent: 0; position: absolute; text-align: center; width: 30px; height: 30px; top: 10px; left: 0; display: block; content: "\e813"; font-family: Entypo; font-size: 20px; line-height: 20px; }

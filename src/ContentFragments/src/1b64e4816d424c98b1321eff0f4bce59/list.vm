@@ -1,0 +1,37 @@
+#set($members = $core_v2_groupUserMember.List("%{GroupId = $groupId,PageIndex=$pageIndex,PageSize=5}"))
+#foreach($member in $members)
+
+	<div class="post-list-item content-item member" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($member.User.ProfileUrl)">
+		<div class="post">
+			<div class="avatar">
+				#if ($member.User.ProfileUrl)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($member.User.ProfileUrl)" class="internal-link view-user-profile">
+						$core_v2_ui.GetResizedImageHtml($member.User.AvatarUrl, 40, 40, "%{border='0', alt=$member.User.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+					</a>
+				#else
+					$core_v2_ui.GetResizedImageHtml($member.User.AvatarUrl, 40, 40, "%{border='0', alt=$member.User.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+				#end
+			</div>
+			<div class="details">
+			
+			</div>
+			<div class="content">
+				#if ($member.User.ProfileUrl)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($member.User.ProfileUrl)" class="internal-link view-user-profile">
+						$member.User.DisplayName
+					</a>
+				#else
+					$member.User.DisplayName
+				#end
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item members"><div class="message norecords">$core_v2_language.GetResource('no_wikis')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($members.TotalCount > (($members.PageIndex + 1) * $members.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

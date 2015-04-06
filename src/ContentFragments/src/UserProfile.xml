@@ -1,0 +1,74 @@
+<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:UserProfile_Name}" version="7.0.0.1" instanceIdentifier="6dd9ec44407f4d5fb9f85292c2004ee0" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="user-profile">
+	<contentScript>
+<![CDATA[
+
+#set ($userId = false)
+#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+#set ($user = false)
+#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+#if (!$user)
+	$core_v2_widget.Hide()
+#end
+
+#set($profileGroup = false)
+#set($profileGroupId = $core_v2_widget.GetIntValue('profileFieldGroupId', -1))
+#if ($profileGroupId > 0)
+	#set($profileGroup = $core_v2_userProfileFieldGroup.Get($profileGroupId))
+#else
+	#foreach ($pg in $core_v2_userProfileFieldGroup.List())
+		#if ($pg.Title.ToLower() == 'mobile')
+			#set($profileGroup = $pg)
+		#end
+	#end
+#end
+
+#if (!$profileGroup)
+	$core_v2_widget.Hide()
+#end
+
+#set($data = $core_v2_page.ParseQueryString(''))
+#foreach($profileField in $user.ProfileFields)
+	$data.Add($profileField.Label, $core_v2_encoding.HtmlDecode($profileField.Value))
+#end
+
+#set($dq = '"')
+#set($propertyHeaderFormat = "<div class=${dq}profile-field${dq}><div class=${dq}label${dq}>{PropertyName}</div><div class=${dq}value${dq}>")
+#set($propertyFooterFormat = '</div></div>')
+
+<div class="profile">
+	<div class='profile-field-list'>
+		#set($form = false)
+
+		#set($form = $core_v2_dynamicForm.RenderForm($core_v2_widget.UniqueId('form'), $core_v2_userProfileFieldGroup.DynamicFormXml($profileGroup.Id, "%{ReadOnly='true'}"), $data, "%{GroupFooterHtmlFormat='',GroupHeaderHtmlFormat='',PropertyFooterHtmlFormat=$propertyFooterFormat,PropertyHeaderHtmlFormat=$propertyHeaderFormat,HidePropertiesWithoutValues='true'}"))
+		#if (!$form || $form.Length == 0)
+			$core_v2_widget.Hide()
+		#else
+			$mobile_v1_dataFormat.Detect($form)
+		#end
+
+	</div>
+</div>
+
+]]>
+</contentScript>
+
+<headerScript></headerScript>
+<configuration>
+	<![CDATA[
+	<propertyGroup id="options" resourceName="Options">
+		<property id="profileFieldGroupId" dataType="int" />
+	</propertyGroup>
+	]]>
+</configuration>
+<languageResources>
+	<language key="en-us">
+		<resource name="UserProfile_Name">User Profile</resource>
+	</language>
+</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,110 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:CreateStatus_Name}" version="7.0.0.1" instanceIdentifier="710ffc21661e48ca877df34037d90d94" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="create-status">
+		<contentScript>
+		<![CDATA[
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#set ($accessingUser = $core_v2_user.Accessing)
+
+#set ($enablePosting = false)
+#if ($groupId > 0)
+	#set($group = $core_v2_group.Get("%{Id = $groupId}"))
+	#set ($enablePosting = $group.EnableGroupMessages)
+	#if ($group.GroupType == 'Joinless')
+		#set ($enablePosting = $enablePosting && $core_v2_user.IsRegistered($accessingUser.Id))
+	#else
+		#set ($groupUserMember = false)
+		#set ($groupUserMember = $core_v2_groupUserMember.Get($group.Id, "%{ UserId = $accessingUser.Id }"))
+		#set ($enablePosting = $enablePosting && $groupUserMember != false && ($groupUserMember.MembershipType == "Owner" || $groupUserMember.MembershipType == "Manager" || $groupUserMember.MembershipType == "Member"))
+	#end
+#else
+	#set($enablePosting = true)
+#end
+#set ($enablePosting = $enablePosting && $core_v2_activityStoryUserPreference.Get($core_v2_statusMessage.StoryTypeId).IsLoggingEnabled)
+
+#if (!$enablePosting)
+	$core_v2_widget.Hide()
+#end
+
+#set($userId = $accessingUser.Id)
+#set($contextId = $core_v2_uploadedFile.CreateContextId())
+#set($uploadUrl = $core_v2_uploadedFile.GetUploadUrl($contextId))
+
+#set($uploadContainer = $core_v2_widget.UniqueId('uploadFileContainer'))
+#set($uploadInput = $core_v2_widget.UniqueId('uploadFileInput'))
+#set($uploadFileStateId = $core_v2_widget.UniqueId('uploadFileState'))
+#set($uploadButtonId = $core_v2_widget.UniqueId('upload'))
+#set($removeButtonId = $core_v2_widget.UniqueId('remove'))
+
+#set($bodyId = $core_v2_widget.UniqueId('Body'))
+
+<div class="banner condensed">
+	<div class="context">
+		#if ($group)
+			<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+		#else
+			<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('home'))">$core_v2_language.GetResource('home')</a>
+		#end
+		<h1>$core_v2_language.GetResource('create_status')</h1>
+	</div>
+</div>
+<fieldset>
+	<div class="form-field editor">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.GetResource('body')</label>
+		<textarea id="$core_v2_encoding.HtmlAttributeEncode($bodyId)"></textarea>
+	</div>
+
+	<div class="form-field">
+		<div class="preview" style="display: none;"></div>
+		<a href="#" class="upload with-icon" id="$core_v2_encoding.HtmlAttributeEncode($uploadButtonId)">$core_v2_language.GetResource('StatusMessage_UploadFile')</a>
+		<a href="#" class="remove" id="$core_v2_encoding.HtmlAttributeEncode($removeButtonId)" style="display: none;">$core_v2_language.GetResource('RemoveFile')</a>
+	</div>
+
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.createStatus.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			bodyId : '#$core_v2_encoding.JavascriptEncode($bodyId)',
+			uploadFileUrl : '$core_v2_encoding.JavascriptEncode($uploadUrl)',
+			uploadContextId : '$core_v2_encoding.JavascriptEncode($contextId)',
+			uploadButtonId: "$core_v2_encoding.JavascriptEncode($uploadButtonId)",
+			removeButtonId: "$core_v2_encoding.JavascriptEncode($removeButtonId)",
+			previewAttachmentUrl: "$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('preview-attachment.vm'))",
+			progressMessage: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Uploading'))',
+			changeFileMessage: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('ChangeFile'))',
+			uploadFileMessage: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('StatusMessage_UploadFile'))',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			addStatusUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('add-status.vm'))',
+			groupId: $groupId
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="CreateStatus_Name">Create Status</resource>
+			<resource name="post">Post</resource>
+			<resource name="invalid_file_type">The file type is invalid.</resource>
+			<resource name="StatusMessage_UploadFile">Add a photo, video or file</resource>
+			<resource name="RemoveFile">Remove file</resource>
+			<resource name="ChangeFile">Change file</resource>
+			<resource name="Uploading">Uploading ({0}%)...</resource>
+			<resource name="home">Home</resource>
+			<resource name="create_status">Add status</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

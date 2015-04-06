@@ -1,0 +1,69 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:UserFriendshipRequest_Name}" version="7.0.0.1" instanceIdentifier="5c71ade7256f4ce58fe1f8add7f879ac" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="user-friendship-request">
+		<contentScript>
+		<![CDATA[
+#set($userId = false)
+#set($user = false)
+#set($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('userId')))
+#if ($userId)
+	#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+#end
+#if (!$user)
+	$core_v2_widget.Hide()
+#end
+
+#set($bodyId = $core_v2_widget.UniqueId('body'))
+#set ($defaultRequestMessage = '')
+#set ($defaultRequestMessage = $core_v2_configuration.DefaultFriendshipRequestMessage)
+#set ($defaultRequestMessage = $core_v2_ui.FormatHtmlAsText($defaultRequestMessage))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">$user.DisplayName</a>
+		<h1>$core_v2_language.GetResource('request_friendship')</h1>
+	</div>
+</div>
+<fieldset>
+	<div class="form-field editor">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">
+			$core_v2_language.FormatString($core_v2_language.GetResource('request'), $user.DisplayName)
+		</label>
+		<textarea id="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$defaultRequestMessage</textarea>
+	</div>
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.userFriendshipRequest.register({
+			bodyId: '#$core_v2_encoding.JavascriptEncode($bodyId)',
+			sendLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('send_request'))',
+			requestSent: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('request_sent'))',
+			requesteeId: $user.Id,
+			requestorId: $core_v2_user.Accessing.Id
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+		  	<resource name="UserFriendshipRequest_Name">Friendship Request</resource>
+			<resource name="request">Send a friendship request to {0}</resource>
+			<resource name="send_request">Send</resource>
+			<resource name="request_friendship">Request friendship</resource>
+			<resource name="request_sent">Friendship requested</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

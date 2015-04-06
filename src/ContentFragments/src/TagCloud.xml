@@ -1,0 +1,93 @@
+<scriptedContentFragments>
+<scriptedContentFragment name="${resource:TagCloud_Name}" version="7.0.0.1" instanceIdentifier="0b4c87a9fc284dcb9a159138e5309bd0" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="tag-cloud" >
+	<contentScript>
+		<![CDATA[
+
+#set ($groupId = false)
+#set ($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#if (!$groupId)
+	$core_v2_widget.Hide()
+#end
+#set ($group = false)
+#set ($group = $core_v2_group.Get("%{Id=$groupId}"))
+#if (!$group)
+	$core_v2_widget.Hide()
+#end
+
+#set ($maximumTags = $core_v2_widget.GetIntValue('maximumTags', 25))
+#set ($minimumPostsPerTag = $core_v2_widget.GetIntValue('minimumPostsPerTag', 1))
+#set ($currentTags = false)
+#set ($currentTags = $mobile_v1_urlToken.Value('TagName'))
+#set ($cssClasses = $core_v2_utility.MakeList('level-6','level-5','level-4','level-3','level-2','level-1'))
+
+
+## build base tag query
+#set ($query = "%{PageSize=100,PageIndex=0,SortBy='ContentCount',SortOrder='Descending', ContainerIds = $group.ContainerId}")
+
+#if($currentTags)
+	$query.Add('Tags', $currentTags)
+#end
+
+## load tags
+#set ($tags = false)
+#set ($tags = $core_v2_tags.List($query))
+#set ($sortedTags = $core_v2_tags.Sort($tags, "%{ MinimumItemsPerTag = $minimumPostsPerTag, MaximumNumberOfTags = $maximumTags, CssClasses = $cssClasses }"))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+		#if($currentTags)
+			<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('group-tags',$groupId))">$core_v2_language.GetResource('TagCloud_Title')</a>
+		#end
+		<h1>
+			#if(!$currentTags)
+				$core_v2_language.GetResource('TagCloud_Title')
+			#else
+				$core_v2_language.FormatString($core_v2_language.GetResource('TagCloud_Results_For'), $core_v2_encoding.HtmlEncode($currentTags))
+			#end
+		</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 40, 40, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+
+<div>
+	#foreach ($tag in $sortedTags)
+	#beforeall
+		<ul class="tag-list">
+	#each
+		<li class="tag-item ${tag.CssClass}">
+			<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('group-tag', $group.Id, $tag.Name))"><span></span>$tag.Name</a>
+		</li>
+	#afterall
+		</ul>
+	#nodata
+		#if($currentTags)
+			<div class="tag-list"><div class="message norecords">$core_v2_language.GetResource('TagCloud_NoSubTagsDefined')</div></div>
+		#else
+			<div class="tag-list"><div class="message norecords">$core_v2_language.GetResource('TagCloud_NoTagsDefined')</div></div>
+		#end
+	#end
+</div>
+]]>
+</contentScript>
+	<headerScript></headerScript>
+	<configuration>
+ <![CDATA[
+	<propertyGroup id="options">
+		<property id="maximumTags" dataType="int" defaultValue="25"/>
+		<property id="minimumPostsPerTag" dataType="int" defaultValue="1"/>
+	</propertyGroup>
+]]>
+	</configuration>
+		<languageResources>
+<language key="en-us">
+	<resource name="TagCloud_Name">Tag Cloud</resource>
+	<resource name="TagCloud_Title">Tags</resource>
+	<resource name="TagCloud_Results_For">{0}</resource>
+	<resource name="TagCloud_NoTagsDefined">No tags have been created or used yet.</resource>
+	<resource name="TagCloud_NoSubTagsDefined">Sorry, but there are no more tags available to filter with.</resource>
+</language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>
+

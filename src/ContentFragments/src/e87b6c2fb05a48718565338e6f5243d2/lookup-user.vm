@@ -1,0 +1,44 @@
+#set($searchText = $core_v2_page.GetQueryStringValue('w_SearchText'))
+
+#set($loweredSearchText = "$core_v2_language.Lowercase($searchText)*")
+#set($query = '')
+#set($tokenCount = 0)
+#foreach($token in $core_v2_utility.Split(' ', $searchText))
+	#if ($token && $token.Length > 0)
+		#if ($tokenCount > 0)
+			#set($query = "$query AND ")
+		#end
+		#set($query = "${query}${core_v2_language.Lowercase($token)}*")
+		#set($tokenCount = $tokenCount + 1)
+	#end
+#end
+#if ($tokenCount > 1)
+	#set($query = "username:($query) OR titlelookup:($query)")
+#else
+	#set($query = "username:$query OR titlelookup:$query")
+#end
+
+#set($matchingUsers = $core_v2_searchResult.List("%{Query=$query,Filters='type::user',PageSize=10}"))
+
+#set($exactUser = false)
+#set($exactUser = $core_v2_user.Get("%{Username=$searchText}"))
+
+$core_v2_page.SetContentType('application/json')
+
+#set($accessingUser = $core_v2_user.Accessing)
+
+{"totalMatches":$matchingUsers.TotalCount,
+ "matches":[
+	#if ($exactUser && $exactUser.Id != $accessingUser.Id && $core_v2_urls.AddConversation($exactUser.Id))
+		{"userName":"$core_v2_encoding.JavascriptEncode($exactUser.Username)","title":"$core_v2_encoding.JavascriptEncode($exactUser.DisplayName)#if($exactUser.DisplayName != $exactUser.Username) ($core_v2_encoding.JavascriptEncode($exactUser.Username))#end"},
+	#end
+	#if($matchingUsers)
+		#foreach($matchedUser in $matchingUsers)
+			#foreach($user in $matchedUser.Users)
+				#if ($user && (!$exactUser || $exactUser.Id != $user.Id) && $user.Id != $accessingUser.Id && $core_v2_urls.AddConversation($user.Id))
+					{"userName":"$core_v2_encoding.JavascriptEncode($user.Username)","title":"$core_v2_encoding.JavascriptEncode($user.DisplayName)#if($user.DisplayName != $user.Username) ($core_v2_encoding.JavascriptEncode($user.Username))#end"},
+				#end
+			#end
+		#end
+	#end
+null]}

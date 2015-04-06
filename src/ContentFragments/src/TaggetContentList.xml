@@ -1,0 +1,51 @@
+﻿<scriptedContentFragments>
+<scriptedContentFragment name="${resource:TaggedContentList_Name}" version="7.0.0.1" instanceIdentifier="26dca1e1a198492395e5a6b6f8a3d0ba" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="tagged-content-list" >
+	<contentScript>
+		<![CDATA[
+
+#set ($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#set ($pageSize = $core_v2_widget.GetIntValue('pageSize', 5))
+#set ($pageIndex = 0)
+
+#set($group = false)
+#set($group = $core_v2_group.Get("%{Id=$groupId}"))
+#if (!$group)
+	$core_v2_widget.Hide()
+#end
+
+<div class="post-list tagged-content">
+	$core_v2_widget.ExecuteFile('list.vm')
+</div>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.taggedContentList.register({
+		moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+				wrapper: '#$core_v2_widget.WrapperElementId',
+		pageSize: $pageSize,
+			showSubGroups: '$showSubGroups'
+		});
+	});
+})
+</script>
+		]]>
+</contentScript>
+<headerScript></headerScript>
+<configuration>
+	<![CDATA[
+	<propertyGroup id="options">
+		<property id="pageSize" dataType="int" defaultValue="5" />
+	</propertyGroup>
+	]]>
+</configuration>
+<languageResources>
+	<language key="en-us">
+		<resource name="TaggedContentList_Name">Tagged Content List</resource>
+		<resource name="TaggedContentList_No_Items">There are no posts with the requested tag.</resource>
+	</language>
+</languageResources>
+</scriptedContentFragment>
+</scriptedContentFragments>

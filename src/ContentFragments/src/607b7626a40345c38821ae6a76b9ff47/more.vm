@@ -1,0 +1,20 @@
+##
+## Ajax callback for loading more messages
+##
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+    #set ($accessingUserIsRegistered = true)
+#end
+
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set($conversationId = false)
+#set($conversationId = $core_v2_utility.ParseGuid($mobile_v1_urlToken.Value('ConversationId')))
+#if (!$conversationId)
+	$core_v2_widget.Hide()
+#end
+
+#set($messages = false)
+
+$core_v2_widget.ExecuteFile('list.vm')

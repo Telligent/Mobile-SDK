@@ -1,0 +1,45 @@
+/* structure */
+#wrapper {
+	width: 100%;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	}
+#refreshable-container {
+	overflow-y: auto;
+	position: relative;
+	height: 100%;
+	-webkit-overflow-scrolling: touch;
+	}
+#refresh-indicator {
+	height: 70px;
+	width: 100%;
+	position: absolute;
+	left: 0;
+    -webkit-transform: translate3d(0,0,0);
+	}
+#refreshable-content {
+	min-height: 100%;
+    -webkit-transform: translate3d(0,0,0);
+	}
+
+/* aesthetics */
+#refreshable-container {
+	background-color: #ecf0f1;
+	}
+#refresh-indicator {
+	height: 70px;
+	line-height: 70px;
+	color: #7f8c8d;
+	text-align: left;
+	padding-left: 20px;
+	font-weight: bold;
+	background-color: #ecf0f1;
+	}
+#refreshable-content {
+    font-size: 20px;
+	padding: 20px;
+	background-color: #fff;
+	}

@@ -1,0 +1,54 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:Login_Name}" version="7.0.0.1" instanceIdentifier="ce856d3882c4417ea991d42844187c8e" isCacheable="true" varyCacheByUser="false" showHeaderByDefault="false" cssClass="login">
+		<contentScript>
+		<![CDATA[
+
+#set ($siteName = '')
+#set ($siteInfo = $core_v2_infoResult.Get())
+#set ($siteName = $core_v2_language.Truncate($siteInfo.SiteName, 35, '...'))
+#set ($siteNameId = $core_v2_widget.UniqueId('siteNameId'))
+#set ($loginLinkId = $core_v2_widget.UniqueId('loginLinkId'))
+
+<h1 id="$core_v2_encoding.HtmlAttributeEncode($siteNameId)">$siteName</h1>
+<a id="$core_v2_encoding.HtmlAttributeEncode($loginLinkId)" class="internal-link login" href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_authentication.Login())">$core_v2_language.GetResource('login')</a>
+
+<script>
+var wrapperId = "#${core_v2_encoding.JavascriptEncode($core_v2_widget.WrapperElementId)}";
+var siteNameId = "#${core_v2_encoding.JavascriptEncode($siteNameId)}";
+var loginLinkId = "#${core_v2_encoding.JavascriptEncode($loginLinkId)}";
+jQuery(function(j){
+	jQuery.telligent.evolution.mobile.setClass('login');
+	jQuery.telligent.evolution.mobile.refreshable(false);
+	jQuery.telligent.evolution.mobile.navigable(false);
+	j.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		j(siteNameId)
+			.evolutionTransform({ top: 50 })
+			.evolutionTransform({ opacity: 1, top: 0 }, {
+				duration: 250,
+				easing: 'ease-out',
+				complete: function() {
+					j(loginLinkId).evolutionTransform({ opacity: 1 }, {
+						duration: 250,
+						easing: 'ease-out'
+					});
+				}
+			});
+		j(wrapperId).on('pointermove', function(e){
+			e.preventDefault();
+		});
+	});
+});
+</script>
+
+		]]>
+		</contentScript>
+	<headerScript>
+	</headerScript>
+	<languageResources>
+	  <language key="en-us">
+		<resource name="Login_Name">Login</resource>
+		<resource name="login">Login</resource>
+	  </language>
+	</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,160 @@
+<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:FeaturedContentSlider_Name}" cssClass="featured-content-slider" instanceIdentifier="387656725d5b48bdae2c451035b95d4d" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false">
+	<contentScript>
+	<![CDATA[
+#set ($pageSize = 5)
+#set ($transition = 'transitionAutomatic')
+#set ($duration = 5000)
+#set ($shadowText = true)
+#set ($featureCount = 0)
+#set ($featureBackground = '#444')
+#set ($featureForeground = false)
+
+#set ($previousId = $core_v2_widget.UniqueId('previous'))
+#set ($nextId = $core_v2_widget.UniqueId('next'))
+
+## collect content features
+#set ($group = $core_v2_group.Current)
+#set ($contentFeatures = $core_v2_feature.List("%{ GroupId = $group.Id, Count = $pageSize }"))
+#if (!$contentFeatures || $contentFeatures.Count == 0)
+	$core_v2_widget.Hide()
+#end
+
+#foreach ($featuredContent in $contentFeatures)
+#beforeall
+	<div class="featured-content-slider">
+		<div class="content-list-wrapper">
+			<ul class="content-list content">
+#each
+				#set ($feature = "%{ Shadow = $shadowText, Image = $featuredContent.Image, Url = $featuredContent.Url, Title = $featuredContent.Title, Description = $featuredContent.Content, Background = $featureBackground, Foreground = $featureForeground }")
+				#if ($featuredContent.User)
+					$feature.Add('UserAvatarUrl', $featuredContent.User.AvatarUrl)
+					$feature.Add('UserProfileUrl', $featuredContent.User.ProfileUrl)
+					$feature.Add('UserDisplayName', $featuredContent.User.DisplayName)
+				#end
+
+				#set ($hasImageMedia = false)
+				#if ($feature.Image && $feature.Image.length > 0)
+					#set ($mediaType = $core_v2_ui.GetMediaType($feature.Image, "%{ ViewType = 'View' }"))
+					#if ($mediaType == 'Image')
+						#set ($hasImageMedia = true)
+					#end
+				#end
+
+				<li class="content-item"
+					style="
+						#if ($feature.Foreground)
+							color: $feature.Foreground;
+						#end
+						#if ($feature.Background)
+							background-color: $feature.Background;
+						#end
+					">
+					#if ($hasImageMedia)
+						<div class="avatar-container">
+							<div class="avatar-wrapper">
+								<div class="avatar #if ($hasImageMedia && $feature.Shadow) shadowed #end">
+									$core_v2_ui.GetResizedImageHtml($feature.Image, 640, 214, "%{ border='0px', ResizeMethod = 'ZoomAndCrop' }")
+								</div>
+							</div>
+						</div>
+					#end
+
+					<div class="caption #if ($hasImageMedia && $feature.Shadow) shadowed #end">
+						#if ($feature.Title && $feature.Title.length > 0)
+							<h3 class="name">
+								#if ($feature.Url && $feature.Url.length > 0)
+									<a href="$core_v2_encoding.HtmlAttributeEncode($feature.Url)"
+										class="internal-link view-post"
+										#if ($feature.Foreground) style="color: $feature.Foreground" #end
+										>
+										$core_v2_language.Truncate($feature.Title, 35, '...')
+									</a>
+								#else
+									$core_v2_language.Truncate($feature.Title, 35, '...')
+								#end
+							</h3>
+						#end
+
+						#if ($feature.UserAvatarUrl && $feature.UserAvatarUrl.length > 0 && $feature.UserDisplayName && $feature.UserDisplayName.length > 0)
+							<div class="author">
+								<div class="avatar">
+									#if ($feature.UserProfileUrl && $feature.UserProfileUrl.length > 0)
+										<a href="$core_v2_encoding.HtmlAttributeEncode($feature.UserProfileUrl)">
+											$core_v2_ui.GetResizedImageHtml($feature.UserAvatarUrl, 20, 20, "%{border='0px', alt=$feature.UserDisplayName, ResizeMethod = 'ZoomAndCrop' }")
+										</a>
+									#else
+										$core_v2_ui.GetResizedImageHtml($feature.UserAvatarUrl, 20, 20, "%{border='0px', alt=$feature.UserDisplayName, ResizeMethod = 'ZoomAndCrop' }")
+									#end
+								</div>
+								<span class="user-name">
+									#if ($feature.UserProfileUrl && $feature.UserProfileUrl.length > 0)
+										<a href="$core_v2_encoding.HtmlAttributeEncode($feature.UserProfileUrl)" class="internal-link view-user-profile">
+											$core_v2_language.Truncate($feature.UserDisplayName, 50, '...')
+										</a>
+									#else
+										$core_v2_language.Truncate($feature.UserDisplayName, 50, '...')
+									#end
+								</span>
+							</div>
+						#end
+
+						#if ($feature.Description && $feature.Description.length > 0)
+							<div class="content">
+								$core_v2_language.Truncate($feature.Description, 25, '...')
+							</div>
+						#end
+					</div>
+				</li>
+#afterall
+			</ul>
+		</div>
+		#if ($contentFeatures.Count > 1)
+			<a href="#" id="$core_v2_encoding.HtmlAttributeEncode($previousId)" class="navigation previous">Previous</a>
+			<a href="#" id="$core_v2_encoding.HtmlAttributeEncode($nextId)" class="navigation next">Next</a>
+			#set ($maxFeatutureIndex = $contentFeatures.Count - 1)
+			#foreach($i in [0..$maxFeatutureIndex])
+			#beforeall
+				<div class="feature-links">
+					<ul>
+			#each
+						<li>
+							<a href="#" class="feature-link" data-featureindex="$i">
+								$core_v2_language.FormatString($core_v2_language.GetResource("feature"), $i.ToString())
+							</a>
+						</li>
+			#afterall
+					</ul>
+				</div>
+			#end
+		#end
+	</div>
+
+	<script>$core_v2_widget.RenderFile('ui.js')</script>
+	<script>
+		jQuery(function(){
+			jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+				jQuery.telligent.evolution.widgets.featuredContentList.register({
+					wrapper: '#$core_v2_widget.WrapperElementId',
+					automatic: #if ($transition == 'transitionAutomatic') true #else false #end,
+					duration: $duration,
+					previousId: '#$core_v2_encoding.JavascriptEncode($previousId)',
+					nextId: '#$core_v2_encoding.JavascriptEncode($nextId)'
+				});
+			});
+		});
+	</script>
+#end
+
+	]]>
+	</contentScript>
+	<headerScript>
+	</headerScript>
+		<languageResources>
+<language key="en-us">
+	<resource name="FeaturedContentSlider_Name">Featured Content Slider</resource>
+	<resource name="feature">Feature {0}</resource>
+</language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,187 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:Navigation_Name}" version="7.0.0.1" instanceIdentifier="c50b1c0e777545559ed8e49d31cb89e4" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="navigation">
+		<contentScript>
+			<![CDATA[
+#set($user = $core_v2_user.Accessing)
+#set($unreadNotificationCount = 0)
+#set($unreadConversationCount = 0)
+#set($isUserRegistered = $core_v2_user.IsRegistered($user.Id))
+<div class="search">
+	<input type="search" placeholder="$core_v2_encoding.HtmlAttributeEncode($core_v2_language.GetResource('search_for'))" />
+	<a href="#" class="clear-search">&nbsp;</a>
+</div>
+
+#set($filter = false)
+#set($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+#if (!$filter)
+	#set($filter = '')
+#end
+#set($query = false)
+#set($query = $core_v2_page.GetQueryStringValue('w_query'))
+<div class="search-filters active">
+	<div class="ui-links filters" data-minlinks="100" data-animate="true">
+		<ul>
+			<li><a href="#"#if($filter == '') data-selected#end data-filter="">$core_v2_language.GetResource('filter_content')</a></li>
+			<li><a href="#"#if($filter =='groups') data-selected#end data-filter="groups">$core_v2_language.GetResource('filter_groups')</a></li>
+			<li><a href="#"#if($filter == 'users') data-selected#end data-filter="users">$core_v2_language.GetResource('filter_users')</a></li>
+		</ul>
+	</div>
+</div>
+<div class="navigation-list search-results"></div>
+<div class="navigation-list navigation">
+
+#if ($isUserRegistered)
+	<div class="navigation-item with-avatar">
+		#if ($user.ProfileUrl)
+			<a href="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">
+				<span class="avatar">$core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 32, 32, "%{border='0', alt=$user.DisplayName, ResizeMethod='ZoomAndCrop'}")</span>
+				$user.DisplayName
+			</a>
+		#else
+			<span class="avatar">$core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 32, 32, "%{border='0', alt=$user.DisplayName, ResizeMethod='ZoomAndCrop'}")</span>
+			$user.DisplayName
+		#end
+	</div>
+	<div class="navigation-item header">
+	</div>
+#else
+	<div class="navigation-item with-avatar login">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_authentication.Login())">$core_v2_language.GetResource('log_in')</a>
+	</div>
+#end
+
+<div class="navigation-item home with-avatar">
+	<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('home'))">$core_v2_language.GetResource('home')</a>
+</div>
+
+#if ($isUserRegistered)
+	<div class="navigation-item friends with-avatar"><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('user-friends', $user.Id))">$core_v2_language.GetResource('friends')</a></div>
+	<div class="navigation-item groups with-avatar"><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('user-groups', $user.Id))">$core_v2_language.GetResource('groups')</a></div>
+	<div class="navigation-item bookmarks with-avatar"><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('user-bookmarks', $user.Id))">$core_v2_language.GetResource('bookmarks')</a></div>
+
+	#set ($bookmarks = $core_v2_bookmark.List("%{ PageIndex = $pageIndex, PageSize = 10, SortBy = 'Title', SortOrder = 'Ascending', ContentTypeIds = $core_v2_group.ContentTypeId.ToString() }"))
+	#foreach ($bookmark in $bookmarks)
+	#beforeall
+		<div class="navigation-item header with-label">
+			$core_v2_language.GetResource('bookmarked_groups')
+		</div>
+	#each
+		#set ($content = false)
+		#set ($content = $bookmark.Content)
+		#if ($content)
+			## determine an image to use. Preferring content over application over container
+			#set ($imageUrl = false)
+			#set ($imageUrl = $content.AvatarUrl)
+			#if (!$imageUrl && $content.Application)
+				#set ($imageUrl = $content.Application.AvatarUrl)
+				#if (!$imageUrl && $content.Application.Container)
+					#set ($imageUrl = $content.Application.Container.AvatarUrl)
+				#end
+			#end
+			<div class="navigation-item with-avatar">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($content.Url)">
+					#if ($imageUrl)
+						<span class="avatar">
+							$core_v2_ui.GetResizedImageHtml($imageUrl, 32, 32, "%{border='0', alt=$content.HtmlName('Web'), ResizeMethod='ZoomAndCrop',border='0'}")
+						</span>
+					#end
+
+					#set ($name = $core_v2_language.Truncate($content.HtmlName('Web'), 50, '…'))
+					#if ($name.length == 0)
+						#set ($name = $core_v2_language.Truncate($content.HtmlDescription('Web'), 50, '…'))
+					#end
+					$name
+				</a>
+			</div>
+		#end
+	#afterall
+		#if ($bookmarks.TotalCount > $bookmarks.PageSize)
+			<div class="navigation-item">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('user-bookmarks', $user.Id))">$core_v2_language.GetResource('more_bookmarks')</a>
+			</div>
+		#end
+
+		<div class="navigation-item header">
+		</div>
+	#end
+
+	<div class="navigation-item with-avatar logout"><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_authentication.Logout())">$core_v2_language.GetResource('log_out')</a></div>
+#else
+	#set ($groups = $core_v2_group.List("%{ PageIndex = $pageIndex, PageSize = 10, SortBy = 'SortOrder', SortOrder = 'Ascending', ParentGroupId = $core_v2_group.Root.Id, IncludeAllSubGroups = 'False' }"))
+	#foreach ($group in $groups)
+	#beforeall
+		<div class="navigation-item header with-label">
+			$core_v2_language.GetResource('groups')
+		</div>
+	#each
+		<div class="navigation-item with-avatar">
+			<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">
+				#if ($group.AvatarUrl)
+					<span class="avatar">
+						$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 32, 32, "%{border='0', alt=$group.Name, ResizeMethod='ZoomAndCrop',border='0'}")
+					</span>
+				#end
+
+				$core_v2_language.Truncate($group.Name, 50, '…')
+			</a>
+		</div>
+	#afterall
+		<div class="navigation-item header">
+		</div>
+	#end
+#end
+
+#set ($termsOfService = false)
+#set ($termsOfService = $core_v2_urls.TermsOfService())
+#if ($termsOfService)
+	<div class="navigation-item"><a href="$core_v2_encoding.HtmlAttributeEncode($termsOfService)">$core_v2_language.GetResource('terms_of_service')</a></div>
+#end
+
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.navigation.rendered', 'navigation', function(){
+		jQuery.telligent.evolution.widgets.navigation.register({
+			includeConversationsAndNotifications: #if ($isUserRegistered) true #else false #end,
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			conversationNotificationTypeId: '$core_v2_conversationMessage.NotificationTypeId.ToString()',
+			searchUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('search.vm'))',
+			searchQuery: '#if($query)$core_v2_encoding.JavascriptEncode($query)#end',
+			searchFilter: '#if($filter)$core_v2_encoding.JavascriptEncode($filter)#end',
+			conversationsUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('conversations'))',
+			notificationsUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('notifications'))',
+			getUnreadCountsUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('getUnreadCounts.vm'))'
+		});
+	});
+})
+</script>
+
+		]]>
+		</contentScript>
+	<languageResources>
+	  <language key="en-us">
+		<resource name="Navigation_Name">Navigation</resource>
+		<resource name="log_in">Log In</resource>
+		<resource name="home">Home</resource>
+		<resource name="notifications">Notifications</resource>
+		<resource name="conversations">Conversations</resource>
+		<resource name="friends">Friends</resource>
+		<resource name="bookmarks">Bookmarks</resource>
+		<resource name="log_out">Log Out</resource>
+		<resource name="terms_of_service">Terms Of Service</resource>
+		<resource name="bookmarked_groups">Bookmarked Groups</resource>
+		<resource name="groups">Groups</resource>
+		<resource name="search_for">Search for...</resource>
+		<resource name="more_bookmarks">More...</resource>
+		<resource name="no_matches">No matches were found.</resource>
+		<resource name="filter_content">Content</resource>
+		<resource name="filter_groups">Groups</resource>
+		<resource name="filter_users">People</resource>
+		<resource name="groups">Groups</resource>
+	  </language>
+	</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,73 @@
+#set ($query = "%{PageIndex = $pageIndex, PageSize = $pageSize, SortBy = 'LastModifiedDate', SortOrder = 'Descending' }")
+
+
+#if ($filter == 'review')
+	$query.Add('FriendshipState', 'Pending')
+	$query.Add('RecipientId', $userId)
+#elseif ($filter == 'pending')
+	$query.Add('FriendshipState', 'Pending')
+	$query.Add('RequestorId', $userId)
+#else
+	$query.Add('FriendshipState', 'Approved')
+	$query.Add('RequestorId', $userId)
+#end
+
+#set ($friendships = $core_v2_friendship.List($query))
+
+#foreach ($friendship in $friendships)
+#each
+
+	#set ($friend = false)
+	#if ($friendship.Recipient && $friendship.Recipient.Id == $userId)
+		#set ($friend = $friendship.Requestor)
+	#else
+		#set ($friend = $friendship.Recipient)
+	#end
+
+	#if ($friend)
+		<div class="post-list-item content-item friendship" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($friend.Url)">
+			<div class="post">
+				<div class="avatar">
+					<a href="$core_v2_encoding.HtmlAttributeEncode($friend.Url)" class="internal-link view-user-profile">
+						$core_v2_ui.GetResizedImageHtml($friend.AvatarUrl, 40, 40, "%{border='0', alt=$alt, ResizeMethod='ZoomAndCrop',border='0'}")
+					</a>
+				</div>
+				<div class="content">
+					<a href="$core_v2_encoding.HtmlAttributeEncode($friend.Url)" class="internal-link view-user-profile">$!friend.DisplayName</a>
+				</div>
+				#if($isUserAccessing && ($filter == 'review' || $filter == 'pending'))
+					<div class="actions ui-links" data-minlinks="0" data-maxlinks="2">
+						<ul>
+							#if ($filter == 'review')                                                                   
+								<li class="action-approve-request"><a href="#" data-messagename="friendship.approve-request" data-userId="$userId" data-friendId="$friend.Id" >$core_v2_language.GetResource('UserFriendships_Approve_Request')</a></li>
+								<li class="action-reject-request"><a href="#" data-messagename="friendship.reject-request" data-userId="$userId" data-friendId="$friend.Id" >$core_v2_language.GetResource('UserFriendships_Reject_Request')</a></li>
+							#elseif ($filter == 'pending')
+								<li class="action-cancel-request"><a href="#" data-messagename="friendship.cancel-request" data-userId="$userId" data-friendId="$friend.Id" >$core_v2_language.GetResource('UserFriendships_Cancel_Request')</a></li>
+							#end
+							<li class="action-more"><a href="#" class="more" data-more></a></li>
+							<li><a href="#" data-cancel>$core_v2_language.GetResource('UserFriendships_Cancel')</a></li>
+						</ul>
+					</div>
+				#end
+			</div>
+		</div>
+	#end
+#nodata
+	<div class="post-list-item content-item friendships">
+		<div class="message norecords">
+			#if ($filter == 'review')
+				$core_v2_language.FormatString($core_v2_language.GetResource('UserFriendships_No_Review'), $friend.DisplayName)
+			#elseif ($filter == 'pending')
+				$core_v2_language.FormatString($core_v2_language.GetResource('UserFriendships_No_Pending'), $friend.DisplayName)
+			#else
+				$core_v2_language.FormatString($core_v2_language.GetResource('UserFriendships_No_Friends'), $friend.DisplayName)
+			#end
+		</div>
+	</div>
+#afterall
+	#set ($hasMore = false)
+	#if ($friendships.TotalCount > (($friendships.PageIndex + 1) * $friendships.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

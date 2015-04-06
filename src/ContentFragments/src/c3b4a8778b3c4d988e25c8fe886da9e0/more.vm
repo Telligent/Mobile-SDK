@@ -1,0 +1,20 @@
+##
+## Ajax callback for loading more bookmarks
+##
+
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set ($pageSize = $core_v2_page.GetQueryStringValue('w_pageSize'))
+
+#set ($userId = false)
+#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+
+#set($filter = false)
+#set($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+#if (!$filter)
+	#set($filter = 'content')
+#end
+
+$core_v2_widget.ExecuteFile('list.vm')

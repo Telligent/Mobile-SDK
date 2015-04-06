@@ -1,0 +1,55 @@
+#set($groups = false)
+#if($queryType=='subGroups')
+	#set($groups = $core_v2_group.List("%{ParentGroupId=$parentGroup.Id,PageSize=$pageSize,PageIndex=$pageIndex,SortBy='Name',SortOrder='Ascending',GroupTypes='all'}"))
+#elseif($queryType=='currentUser')
+	#set($groups = $core_v2_group.List("%{UserId=$user.Id,PageSize=$pageSize,PageIndex=$pageIndex,SortBy='LastUpdate',SortOrder='Ascending'}"))
+#else
+	#set ($includePendingMemberships = true)
+	#set($groups = $core_v2_group.List("%{UserId=$user.Id,PageSize=$pageSize,PageIndex=$pageIndex,SortBy='LastUpdate',SortOrder='Ascending',IncludePendingMemberships=$includePendingMemberships}"))
+#end
+
+
+#foreach($group in $groups)
+#each
+	<div class="post-list-item content-item group" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($group.Url)">
+		<div class="post">
+			<div class="avatar">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)" class="internal-link view-group">
+					$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 40, 40, "%{border='0', alt=$group.Name, ResizeMethod='ZoomAndCrop',border='0'}")
+				</a>
+
+			</div>
+
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+			</div>
+			<div class="actions ui-links">
+				<ul>
+					#set ($canViewMemberships = $core_v2_nodePermission.Get("groups", $group.Id, "Group_ViewMembership").IsAllowed)
+					#if ($canViewMemberships)
+						<li class="action-members">
+							<a class="internal-link members" href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('group-members', $group.Id))">
+								#if ($group.TotalMembers == 1)
+									$core_v2_language.FormatString($core_v2_language.GetResource('GroupList_Member'), $core_v2_language.FormatNumber($group.TotalMembers))
+								#elseif ($group.TotalMembers > 1)
+									$core_v2_language.FormatString($core_v2_language.GetResource('GroupList_Members'), $core_v2_language.FormatNumber($group.TotalMembers))
+								#else
+									$core_v2_language.GetResource('GroupList_No_Members')
+								#end
+							</a>
+						</li>
+					#end
+				</ul>
+			</div>
+		</div>
+	</div>
+
+#nodata
+	<div id="${core_v2_widget.WrapperElementId}_message_norecords"><div class="message norecords">$core_v2_language.GetResource('GroupList_No_Groups')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($groups.TotalCount > (($groups.PageIndex + 1) * $groups.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

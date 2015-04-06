@@ -1,0 +1,94 @@
+##
+## Renders an individual activity story
+## Requires in scope:
+##   $story instance
+##
+
+#set ($widgetUniqueStoryId = "${core_v2_widget.WrapperElementId}_story_${message.StoryId}")
+
+#set ($primaryStoryUser = $story.PrimaryUser)
+
+#set ($primaryStoryUserIsRegistered = false)
+#set ($primaryStoryUserIsRegistered = $core_v2_user.IsRegistered($primaryStoryUser.Id))
+#set ($primaryStoryUserIsAccessingUser = false)
+#if ($accessingUser.Id == $primaryStoryUser.Id)
+	#set ($primaryStoryUserIsAccessingUser = true)
+#end
+
+#set ($commentsSupported = false)
+#set ($commentsSupported = $core_v2_comments.SupportsComments($story.ContentTypeId))
+
+#set ($accessingUserCanComment = false)
+#if ($commentsSupported)
+	#set ($accessingUserCanComment = $core_v2_comments.CanCreateComment($story.ContentId, $story.ContentTypeId))
+#end
+
+#set ($widgetUniqueStoryId = "${core_v2_widget.WrapperElementId}_story_${story.StoryId}")
+#set ($storyType = $story.StoryTypeId)
+
+<div id="$!widgetUniqueStoryId" class="post-list-item content-item activity-story $!storyType content-type-${story.ContentTypeId}"
+	data-authorid="$!latestActor.User.Id"
+	data-activityid="$!story.StoryId"
+	data-activitytype="$!storyType"
+	data-activitydate="$!core_v2_language.FormatDate($story.LastUpdate, $dateTimeRoundTripFormat)"
+	data-contentid="$!story.ContentId"
+	data-contenttypeid="$!story.ContentTypeId"
+	data-typeid="$!story.TypeId"
+	data-targeturl="$core_v2_encoding.HtmlAttributeEncode($story.Content.Url)">
+
+	<div class="post activity">
+		<div class="avatar">
+			#if ($primaryStoryUser.ProfileUrl)
+				<a href="$core_v2_encoding.HtmlAttributeEncode($primaryStoryUser.ProfileUrl)" class="internal-link view-user-profile">
+					$core_v2_ui.GetResizedImageHtml($primaryStoryUser.AvatarUrl, 40, 40, "%{border='0', alt=$primaryStoryUser.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+				</a>
+			#else
+				$core_v2_ui.GetResizedImageHtml($primaryStoryUser.AvatarUrl, 40, 40, "%{border='0', alt=$primaryStoryUser.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+			#end
+		</div>
+		<div class="date">$core_v2_language.FormatAgoDate($story.CreatedDate)</div>
+		<div class="content">
+			$mobile_v1_dataFormat.Detect($story.ViewHtml('Web'))
+		</div>
+		<div class="ui-links actions" data-maxlinks="2" data-minlinks="2">
+			<ul class="actions">
+				## Likes
+				#if ($accessingUserIsRegistered && $core_v2_like.CanLike($story.ContentId, $story.ContentTypeId))
+					<li class="action-like">
+						#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+						#set ($likeOptions = "%{ Format = $format }")
+						#if ($story.TypeId)
+							$likeOptions.Add('LikeTypeId', $story.TypeId)
+						#end
+						$core_v2_ui.Like($story.ContentId, $story.ContentTypeId, $likeOptions)
+					</li>
+				#end
+
+				## Comments
+				#if ($commentsSupported)
+					#set ($commentCount = 0)
+					#set ($comments = $core_v2_comments.List("%{ PageIndex = 0, PageSize = 1, ContentId = $story.ContentId, ContentTypeId = $story.ContentTypeId }"))
+					#set ($commentCount = $comments.TotalCount)
+					<li class="action-comment">
+						<a class="comment" href="$core_v2_encoding.HtmlAttributeEncode($story.Content.Url)">
+						#if ($commentCount == 0)
+											$core_v2_language.GetResource('comment')
+						#elseif ($commentCount == 1)
+							$core_v2_language.FormatString($core_v2_language.GetResource('comment_format'), $commentCount)
+						#else
+							#if ($commentCount > 1000000)
+								#set($commentCount = $commentCount / 1000000)
+								#set($commentCount = "${commentCount}M")
+							#elseif ($commentCount > 1000)
+								#set($commentCount = $commentCount / 1000)
+								#set($commentCount = "${commentCount}k")
+							#end
+							$core_v2_language.FormatString($core_v2_language.GetResource('comments_format'), $commentCount)
+						#end
+						</a>
+					</li>
+				#end
+			</ul>
+		</div>
+	</div>
+</div>

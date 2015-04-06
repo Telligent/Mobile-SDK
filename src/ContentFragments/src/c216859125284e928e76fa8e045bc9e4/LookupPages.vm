@@ -1,0 +1,19 @@
+$core_v2_page.SetContentType('application/json')
+
+#set($wikiId = $core_v2_utility.ParseInt($core_v2_page.GetQueryStringValue('w_wikiId')))
+#set($searchText = $core_v2_page.GetQueryStringValue('w_searchText').ToLower())
+#set($totalMatches = 0)
+{"pages":[
+	#foreach($page in $core_v2_utility.FlattenHierarchy($core_v2_wikiToc.List($wikiId), 'Children'))
+		#if($totalMatches < 20)	
+			#set($childWikiPage = $core_v2_wikiPage.Get("%{Id = $page.Item.Id}"))
+			#if(!$childWikiPage.IsDefaultPage)
+				#if($page.Item.Title.ToLower().Contains($searchText))
+					#set($trunk = $core_v2_language.Truncate($page.Item.Title, 55, "..."))
+					{"pageId":$page.Item.Id,"title":"$core_v2_encoding.JavascriptEncode($trunk)"},
+					#set($totalMatches = $totalMatches + 1)
+				#end
+			#end
+		#end
+	#end
+null]}

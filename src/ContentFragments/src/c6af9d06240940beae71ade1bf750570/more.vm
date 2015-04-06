@@ -1,0 +1,10 @@
+##
+## Ajax callback for loading more forums
+##
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set($forumId = false)
+#set($forumId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('ForumId')))
+#if (!$forumId)
+	$core_v2_widget.Hide()
+#end
+$core_v2_widget.ExecuteFile('list.vm')

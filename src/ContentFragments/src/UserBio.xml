@@ -1,0 +1,45 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:UserBio_Name}" version="7.0.0.1" instanceIdentifier="5f626adb9e784d19898bd6c488fb7ac9" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="user-bio">
+		<contentScript>
+			<![CDATA[
+
+			#set ($userId = false)
+			#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+			#if (!$userId)
+			$core_v2_widget.Hide()
+			#end
+			#set ($user = false)
+			#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+			#if (!$user)
+			$core_v2_widget.Hide()
+			#end
+
+			<div class="profile">
+				<div class="profile-field-list">
+					<div class="profile-field">
+						<div class="label">$!core_v2_language.FormatString($core_v2_language.GetResource('UserProfile_Bio'), $user.DisplayName)</div>
+						#set($bio = false)
+						#set($bio = $user.Bio())
+						#if ($bio && $core_v2_utility.Trim($bio) != "")
+						<div class="value user-generated-content">$mobile_v1_dataFormat.Detect($bio)</div>
+						#else
+						<div class="value">$core_v2_language.FormatString($core_v2_language.GetResource('UserProfile_Bio_NotEntered'), $user.DisplayName)</div>
+						#end
+					</div>
+				</div>
+			</div>
+			]]>
+		</contentScript>
+
+		<headerScript></headerScript>
+		<configuration></configuration>
+		<languageResources>
+			<language key="en-us">
+				<resource name="UserBio_Name">User Biography</resource>
+				<resource name="UserProfile_Bio">About {0}</resource>
+				<resource name="UserProfile_Bio_NotEntered">{0} has not entered a biography.</resource>
+			</language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

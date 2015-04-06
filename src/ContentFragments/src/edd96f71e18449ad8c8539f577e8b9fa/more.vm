@@ -1,0 +1,24 @@
+##
+## Ajax callback for loading more friendships
+##
+
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set ($pageSize = $core_v2_page.GetQueryStringValue('w_pageSize'))
+
+#set ($userId = false)
+#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+
+#set($filter = 'friends')
+#set ($isUserAccessing = false)
+#if ($userId == $core_v2_user.Accessing.Id)
+	#set ($isUserAccessing = true)
+#end
+
+#if ($isUserAccessing)
+	#set($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+#end
+
+$core_v2_widget.ExecuteFile('list.vm')

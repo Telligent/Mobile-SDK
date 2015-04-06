@@ -1,0 +1,22 @@
+/* structure */
+#wrapper {
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    height: 100%;
+    overflow: auto;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #EEE;
+    -webkit-overflow-scrolling: touch;
+    }
+#content {
+    overflow-y: auto;
+    position: relative;
+    padding: 10px;
+    background-color: #DDD;
+    }
+

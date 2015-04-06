@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta charset="utf-8" />
+        <title data-native="true">Zimbra</title>
+		<meta name="viewport" content="user-scalable=no, initial-scale=1" data-native="true" />
+		<script type="text/javascript" src="phonegap.js" data-native="true"></script>
+		<script type="text/javascript" src="js/jquery-1.9.1.min.js" data-native="true"></script>
+		<script type="text/javascript" src="js/mobileconfig.js" data-native="true"></script>
+		<script type="text/javascript" src="js/native.js" data-native="true"></script>
+        <script type="text/javascript">
+            (function () {
+                var lastUrl = null, lastCallTimestamp = 0;
+
+                var handleUrl = function (url, attempt) {
+                    if (window.handleOpenURLInternal) {
+                        window.handleOpenURLInternal(url);
+                    } else {
+                        attempt++;
+                        if (attempt < 20) {
+                            window.setTimeout(function () {
+                                handleUrl(url, attempt);
+                            }, 499);
+                        }
+                    }
+                }
+
+                window.handleOpenURL = function (url) {
+                    if (lastUrl == url && (new Date()).getTime() - lastCallTimestamp < 30000) {
+                        return;
+                    }
+
+                    lastUrl = url;
+                    lastCallTimestamp = (new Date()).getTime();
+                    handleUrl(url, 0);
+                }
+            })();
+		</script>
+		<link rel="stylesheet" type="text/css" data-native="true" media="screen" href="css/ui.css" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" data-native="true" />
+    </head>
+    <body>
+    </body>
+</html>

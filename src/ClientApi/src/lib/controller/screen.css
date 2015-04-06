@@ -1,0 +1,243 @@
+/* Shell */
+body {
+	border: 0px;
+	padding: 0px;
+	margin: 0px;
+	font-size: 20pt;
+	background-color: #000;
+	}
+a {
+	-webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+#viewport {
+	width: 100%;
+	overflow: hidden;
+	margin-top: 0px;
+	position: absolute;
+	height: 100%;
+	}
+
+	#content-wrapper {
+		width: 100%;
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		right: 0px;
+		bottom: 0px;
+		margin-top: 0px;
+		background-color: #fff;
+		box-shadow: 0px 0px 15px rgba(0,0,0,0.3);
+		-webkit-transition: -webkit-transform .25s cubic-bezier(0.455, 0.030, 0.515, 0.955);
+		-webkit-transform: translate3d(0,0,0);
+		border-radius: 3px 3px 0px 0px;
+		overflow: hidden;
+		}
+		#header {
+			background: #2980b9;
+			color: #fff;
+			height: 50px;
+			position: absolute;
+			top: 0;
+			width: 100%;
+			line-height: 50px;
+			text-align: center;
+			}
+			.header-button {
+				font-size: 15px;
+				/*padding: 5px;*/
+				/*margin: 10px 10px 10px 10px;*/
+				text-decoration: none;
+				background-color: #fff;
+				color: #000;
+				line-height: 1.2em;
+				display: block;
+				}
+			.header-button.disabled {
+				color: #AAA;
+				}
+			#header .shell {
+				width: 32%;
+				height: 100%;
+				float: left;
+				background-color: orange;
+			}
+			#header .button {
+				width: 32%;
+				height: 100%;
+				float: left;
+				background-color: yellow;
+			}
+			#header .user {
+				width: 36%;
+				height: 100%;
+				float: left;
+				background-color: red;
+			}
+			#header .shell .header-button {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+			}
+			#header .shell .header-button.refresh {
+				left: 16%;
+				background-color: yellow;
+				height: 100%;
+				width: 16%;
+			}
+			#header .button .header-button {
+				position: absolute;
+				top: 0px;
+				right: 0px;
+			}
+
+		#content {
+			position: absolute;
+			top: 50px;
+			left: 0px;
+			right: 0px;
+			bottom: 0px;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			-webkit-transform: translate3d(0,0,0);
+			}
+
+	#gutter-wrapper {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		-webkit-transition: -webkit-transform .25s cubic-bezier(0.455, 0.030, 0.515, 0.955);
+		-webkit-transform: translate3d(20%,0,0) scale(0.93);
+		}
+		#gutter {
+			position: absolute;
+			top: 0px;
+			bottom: 0px;
+			overflow-y: auto;
+			background-color: #222;
+			color: #fff;
+			-webkit-overflow-scrolling: touch;
+			-webkit-transform: translate3d(0,0,0);
+			border-radius: 3px 0px 0px 3px;
+			}
+			#gutter a {
+				color: #fff;
+				}
+			#gutter-content-wrapper {
+				font-size: 15pt;
+				height: 101%;
+				}
+			#gutter-content {
+				padding: 10px;
+				}
+
+#content {
+	overflow-y: auto;
+	position: absolute;
+	top: 50px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	-webkit-overflow-scrolling: touch;
+	background-color: #ecf0f1;
+	overflow-y: auto;
+	}
+#debug {
+	top: 0px;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	-webkit-overflow-scrolling: touch;
+	opacity: .8;
+	font-size: 11px;
+	background-color: #000;
+	color: #fff;
+	font-family: Helvetica, Arial, sans-serif;
+	padding: 5px;
+	position: absolute;
+	z-index: 100;
+	left: 2000px;
+    display: none;
+	}
+#refresh-indicator {
+	height: 70px;
+	width: 100%;
+	position: absolute;
+	left: 0;
+    -webkit-transform: translate3d(0,0,0);
+	height: 70px;
+	line-height: 70px;
+	color: #7f8c8d;
+	text-align: center;
+	font-weight: bold;
+	font-size: 16px;
+	}
+#refreshable-content {
+	min-height: 100%;
+    -webkit-transform: translate3d(0,0,0);
+    font-size: 20px;
+	background-color: #fff;
+	position: relative;
+	}
+	#refreshable-content .slideable {
+		padding: 20px;
+		min-height: 100%;
+    	-webkit-transform: translate3d(0,0,0);
+		}
+.scrollable-loading-indicator {
+	background-color: #EEE;
+	padding: 10px;
+	font-size: 12px;
+	min-height: 50px;
+	}
+
+p {
+	margin: 0 0 1em 0;
+	}
+
+ul {
+	list-style: none;
+}
+
+.warning {
+	text-align: center;
+	background-color: #e67e22;
+	color: #fff;
+	height: 50px;
+	line-height: 50px;
+	}
+
+/* sheets */
+.sheet {
+    background-color: #EEE;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.action-sheet {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+.link {
+    display: block;
+    background-color: #fff;
+    padding: 5px;
+    color: #000;
+    margin: 0 0 10px 0;
+}
+.active {
+    background-color: #000;
+    color: #fff;
+}
+.action-cancel {
+    display: block;
+    background-color: #fff;
+    padding: 5px;
+    color: red;
+    margin: 0 0 10px 0;
+}
+.action-cancel-active {
+    background-color: red;
+    color: #fff;
+}

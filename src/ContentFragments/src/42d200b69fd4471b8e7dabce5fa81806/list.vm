@@ -1,0 +1,72 @@
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($query = "%{PageIndex=$pageIndex,PageSize=$pageSize,SortBy='MostRecent',SortOrder='Descending'}")
+#if ($blogId)
+	$query.Add('BlogId', $blogId)
+#elseif ($userId)
+	$query.Add('AuthorId', $userId)
+	$query.Add('GroupId', $core_v2_group.Root.Id)
+	$query.Add('IncludeSubGroups', true)
+#else
+	$core_v2_widget.Hide()
+#end
+
+
+#set($posts = $core_v2_blogPost.List($query))
+
+#foreach($post in $posts)
+#each
+	<div class="post-list-item content-item blogpost" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($post.Url)">
+		<div class="post">
+			<div class="avatar">
+				#if ($post.Author.ProfileUrl)
+							<a href="$core_v2_encoding.HtmlAttributeEncode($post.Author.ProfileUrl)" class="internal-link view-user-profile">
+								$core_v2_ui.GetResizedImageHtml($post.Author.AvatarUrl, 40, 40, "%{border='0', alt=$post.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+							</a>
+						#else
+							$core_v2_ui.GetResizedImageHtml($post.Author.AvatarUrl, 40, 40, "%{border='0', alt=$post.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+						#end
+			</div>
+			<div class="details">
+				<div class="date">$core_v2_language.FormatAgoDate($post.PublishedDate)</div>
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($post.Url)">$post.Title</a>
+			</div>
+			<div class="actions ui-links">
+				<ul>
+					#if ($accessingUserIsRegistered && $core_v2_like.CanLike($post.ContentId, $core_v2_blogPost.ContentTypeId))
+						<li class="action-like">
+							#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+							$core_v2_ui.Like($post.ContentId, $core_v2_blogPost.ContentTypeId, "%{ Format = $format }")
+						</li>
+					#end
+
+					<li class="action-comment">
+						<a class="internal-link comment" href="$core_v2_encoding.HtmlAttributeEncode($post.Url)">
+							#if ($post.CommentCount == 0)
+								$core_v2_language.GetResource('no_comments')
+							#elseif ($post.CommentCount == 1)
+								$core_v2_language.FormatString($core_v2_language.GetResource('comment_count'), $core_v2_language.FormatNumber($post.CommentCount))
+							#else
+								$core_v2_language.FormatString($core_v2_language.GetResource('comment_count'), $core_v2_language.FormatNumber($post.CommentCount))
+							#end
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item blog"><div class="message norecords">$core_v2_language.GetResource('no_posts')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($posts.TotalCount > (($posts.PageIndex + 1) * $posts.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

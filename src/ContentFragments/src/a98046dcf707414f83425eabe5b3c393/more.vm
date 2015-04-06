@@ -1,0 +1,10 @@
+##
+## Ajax callback for loading more wikis
+##
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set($groupId = false)
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#if (!$groupId)
+	$core_v2_widget.Hide()
+#end
+$core_v2_widget.ExecuteFile('list.vm')

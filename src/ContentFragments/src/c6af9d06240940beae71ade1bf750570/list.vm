@@ -1,0 +1,62 @@
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($threads = $core_v2_forumThread.List("%{ForumId=$forumId,PageIndex=$pageIndex,PageSize=7,SortBy='LastPost',SortOrder='Descending'}"))
+#foreach($thread in $threads)
+#each
+	<div class="post-list-item content-item forumthread #if ($thread.ThreadType == 'QuestionAndAnswer')#if($thread.ThreadStatus == 'Answered') answer#elseif($thread.ThreadStatus == 'AnsweredNotVerified') suggested-answer#end#end" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($thread.Url)">
+		<div class="post">
+			<div class="avatar">
+				#if ($thread.Author.ProfileUrl)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($thread.Author.ProfileUrl)" class="internal-link view-user-profile">
+						$core_v2_ui.GetResizedImageHtml($thread.Author.AvatarUrl, 40, 40, "%{border='0', alt=$thread.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+					</a>
+				#else
+					$core_v2_ui.GetResizedImageHtml($thread.Author.AvatarUrl, 40, 40, "%{border='0', alt=$thread.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+				#end
+			</div>
+			<div class="details">
+				<div class="date">#if ($thread.LatestPostDate)${core_v2_language.FormatAgoDate($thread.LatestPostDate)}#else${core_v2_language.FormatAgoDate($thread.Date)}#end</div>
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($thread.Url)">$thread.Subject</a>
+			</div>
+			<div class="actions ui-links">
+				<ul>
+					#if ($accessingUserIsRegistered && $core_v2_like.CanLike($thread.ContentId, $core_v2_forumThread.ContentTypeId))
+						<li class="action-like">
+							#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+							$core_v2_ui.Like($thread.ContentId, $core_v2_forumThread.ContentTypeId, "%{ Format = $format }")
+						</li>
+					#end
+					<li>
+						#if ($thread.ThreadType == 'QuestionAndAnswer' && $thread.ThreadStatus == 'Answered')
+							<a href="#" class="answered" data-threadid="$thread.Id">$core_v2_language.GetResource('answered')</a>
+						#else
+							<span class="detail comment">
+								#if ($thread.ReplyCount == 0)
+									$core_v2_language.GetResource('no_replies')
+								#elseif ($thread.ReplyCount == 1)
+									$core_v2_language.FormatString($core_v2_language.GetResource('reply_count'), $core_v2_language.FormatNumber($thread.ReplyCount))
+								#else
+									$core_v2_language.FormatString($core_v2_language.GetResource('replies_count'), $core_v2_language.FormatNumber($thread.ReplyCount))
+								#end
+							</span>
+						#end
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item forum"><div class="message norecords">$core_v2_language.GetResource('no_threads')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($threads.TotalCount > (($threads.PageIndex + 1) * $threads.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

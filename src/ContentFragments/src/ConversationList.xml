@@ -1,0 +1,50 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:ConversationList_Name}" version="7.0.0.1" instanceIdentifier="5bf0e5f843ca4cd8a69bbab3ac7a6629" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="conversation-list">
+		<contentScript>
+		<![CDATA[
+<div class="banner condensed">
+	<div class="context">
+		<h1>$core_v2_language.GetResource('conversations')</h1>
+	</div>
+</div>
+
+## load and render threads
+<div class="post-list conversations">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.conversationList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			notificationTypeId: '$core_v2_encoding.JavascriptEncode($core_v2_conversationMessage.NotificationTypeId.ToString())',
+			newConversationUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('conversation-add'))',
+			newConversationLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('new_conversation'))'
+		});
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="ConversationList_Name">Conversation List</resource>
+		<resource name="conversations">Inbox</resource>
+		<resource name="no_conversations">There are no messages in your inbox.</resource>
+		<resource name="no_messages">No messages</resource>
+		<resource name="message_count">{0} message</resource>
+		<resource name="messages_count">{0} messages</resource>
+		<resource name="participants_before">with </resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

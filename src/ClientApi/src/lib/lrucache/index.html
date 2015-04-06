@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>LRU Cache</title>
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+<body>
+	<strong>Tests written to console...</strong>
+	<script src="../../jquery.min.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+	<script src="../../test.js"></script>
+	<script src="lrucache.js"></script>
+
+	<script type="text/javascript">
+
+	require(['lrucache'], function(LruCache, $, global, undef) {
+
+		// set up a stack
+		var _store;
+		var cache = new LruCache({
+			size: 3,
+			load: function() {
+				return _store;
+			},
+			persist: function(obj) {
+				_store = obj;
+			}
+		});
+
+		test("size returns size", function(){
+			return cache.size() === 3;
+		})
+		.then(function(){ return test("set when less than max sets", function(){
+			cache.set('a', 'av');
+			return _store != null && _store['a'].value == 'av';
+		})})
+		.then(function(){ return test("set when less more than max evicts oldest", function(){
+			cache.set('b', 'bv');
+			cache.set('c', 'cv');
+			cache.set('d', 'dv');
+			return _store != null
+				&& Object.keys(_store).length === 3
+				&& _store['a'] === undef
+				&& _store['b'].value == 'bv'
+				&& _store['c'].value == 'cv'
+				&& _store['d'].value == 'dv';
+		})})
+		.then(function(){ return test("set updates value for existing key and updates last access", async(function(complete){
+			setTimeout(function(){
+				// update current oldest
+				cache.set('b', 'bv2');
+				// add a new one, which shouldn't bump out the previously oldest one
+				setTimeout(function(){
+					cache.set('e', 'ev');
+					complete(_store != null
+						&& Object.keys(_store).length === 3
+						&& _store['c'] === undef
+						&& _store['b'].value == 'bv2'
+						&& _store['d'].value == 'dv'
+						&& _store['e'].value == 'ev');
+				}, 10);
+			}, 10);
+		}))})
+		.then(function(){ return test("get returns null when not there", function(){
+			return cache.get('zzz') === null;
+		})})
+		.then(function(){ return test("get updates last access for gotten key", async(function(complete){
+			setTimeout(function(){
+				// get b
+				var bValue = cache.get('b');
+				// add a new one
+				setTimeout(function(){
+					cache.set('f', 'fv');
+					complete(_store != null
+						&& Object.keys(_store).length === 3
+						&& _store['d'] === undef
+						&& _store['b'].value == 'bv2'
+						&& _store['e'].value == 'ev'
+						&& _store['f'].value == 'fv');
+				}, 10);
+			}, 10);
+		}))})
+		.then(function(){ return test("del removes", function(){
+			cache.del('f');
+			return Object.keys(_store).length === 2
+					&& _store['b'].value == 'bv2'
+					&& _store['e'].value == 'ev';
+		})})
+
+	}, jQuery, window);
+	</script>
+</body>
+</html>

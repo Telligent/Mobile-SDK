@@ -1,0 +1,66 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:GroupMembershipRequest_Name}" version="7.0.0.1" instanceIdentifier="fee03ac5964c4e4b832ed8fa466850ff" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="group-membership-request">
+		<contentScript>
+		<![CDATA[
+#set($groupId = false)
+#set($group = false)
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#if ($groupId)
+	#set($group = $core_v2_group.Get("%{Id=$groupId}"))
+#end
+#if (!$group)
+	$core_v2_widget.Hide()
+#end
+
+#if (!$core_v2_nodePermission.Get("groups", $group.Id, "Group_JoinGroupByRequest").IsAllowed)
+	$core_v2_widget.Hide()
+#end
+
+#set($bodyId = $core_v2_widget.UniqueId('body'))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+		<h1>$core_v2_language.GetResource('request_membership')</h1>
+	</div>
+</div>
+<fieldset>
+	<div class="form-field editor">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.FormatString($core_v2_language.GetResource('request'), $group.Name)</label>
+		<textarea id="$core_v2_encoding.HtmlAttributeEncode($bodyId)"></textarea>
+	</div>
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.groupMembershipRequest.register({
+			bodyId: '#$core_v2_encoding.JavascriptEncode($bodyId)',
+			sendLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('send'))',
+			groupId: $group.Id,
+			userId: $core_v2_user.Accessing.Id
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="GroupMembershipRequest_Name">Group Membership Request</resource>
+			<resource name="request">Request access to {0}</resource>
+			<resource name="send">Send</resource>
+			<resource name="request_membership">Request membership</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

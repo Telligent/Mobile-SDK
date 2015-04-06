@@ -1,0 +1,115 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:MediaGalleryPost_Name}" version="7.0.0.1" instanceIdentifier="fad2d5f95f56467e885c112cbc6d47f2" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="media-gallery-post">
+		<contentScript>
+		<![CDATA[
+#set($mediaId = false)
+#set($mediaId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('MediaId')))
+#if (!$mediaId)
+	$core_v2_widget.Hide()
+#end
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($media = $core_v2_media.Get($mediaId))
+#set ($mediaType = $core_v2_ui.GetMediaType($media.File.FileUrl))
+#set($gallery = $core_v2_gallery.Get("%{Id=$media.MediaGalleryId}"))
+
+<div class="post topic full">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($gallery.Group.Url)">$gallery.Group.Name</a>
+		<a href="$core_v2_encoding.HtmlAttributeEncode($gallery.Url)">$gallery.Name</a>
+	</div>
+	<h1>$media.Title</h1>
+	<div class="details">
+		<div class="avatar">
+			#if ($media.Author.ProfileUrl)
+				<a href="$core_v2_encoding.HtmlAttributeEncode($media.Author.ProfileUrl)" class="internal-link view-user-profile">
+					$core_v2_ui.GetResizedImageHtml($media.Author.AvatarUrl, 24, 24, "%{border='0', alt=$media.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+				</a>
+			#else
+				$core_v2_ui.GetResizedImageHtml($media.Author.AvatarUrl, 24, 24, "%{border='0', alt=$media.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+			#end
+		</div>
+		<div class="date">$core_v2_language.FormatAgoDate($media.Date)</div>
+		<div class="author">
+			#if ($media.Author.ProfileUrl)
+				<a href="$core_v2_encoding.HtmlAttributeEncode($media.Author.ProfileUrl)" class="internal-link view-user-profile">
+					$media.Author.DisplayName
+				</a>
+			#else
+				$media.Author.DisplayName
+			#end
+		</div>
+	</div>
+	<div class="content">
+		<div>
+			$!core_v2_ui.GetViewHtml($media.File.FileUrl, "%{AdjustToContainer='True'}")
+		</div>
+		<div class="user-generated-content">
+			$!mobile_v1_dataFormat.Detect($!media.Body())
+		</div>
+	</div>
+	#set($showLikes = false)
+	#if($accessingUserIsRegistered && $core_v2_like.CanLike($media.ContentId, $core_v2_media.ContentTypeId))
+		#set($showLikes = true)
+	#end
+
+	<div class="actions ui-links" data-maxlinks="#if($showLikes)2#else 1#end">
+		#if ($showLikes)
+			<li class="action-like">
+				#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+				$core_v2_ui.Like($media.ContentId, $core_v2_media.ContentTypeId, "%{ Format = $format }")
+			</li>
+		#end
+
+		<li>
+			<a href="#" onclick="window.open('$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Redirect($core_v2_mediaUrls.DownloadMedia($media.Id, false), "%{Target='Host'}"))', '_system'); return false;" class="internal-link download">
+				#if ($media.File.IsRemoteAttachment)
+					$core_v2_language.GetResource("MediaGalleries_Button_View")
+				#else
+					$core_v2_language.GetResource("MediaGalleries_Button_Download")
+				#end
+			</a>
+		</li>
+
+		#if ($accessingUserIsRegistered)
+			<li><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('media-edit',$mediaId))">$core_v2_language.GetResource('edit')</a></li>
+		#end
+		#if ($accessingUserIsRegistered && $core_v2_bookmark.CanBookmark($media.ContentId, $core_v2_media.ContentTypeId))
+			<li class="action-bookmark">
+				$core_v2_ui.Bookmark($media.ContentId, $core_v2_media.ContentTypeId)
+			</li>
+		#end
+		<li class="action-moderate">$core_v2_ui.Moderate($media.ContentId, $core_v2_media.ContentTypeId)</li>
+
+		<li class="action-more"><a href="#" data-more></a></li>
+		<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+	</div>
+</div>
+
+
+$mobile_v1_ui.Comments($media.ContentId, $core_v2_media.ContentTypeId, "%{ CanFlagAsAbusive = $accessingUserIsRegistered, AccessingUserId = $accessingUser.Id }")
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="MediaGalleryPost_Name">Media Gallery Post</resource>
+			<resource name="media_gallery">Media Galleries</resource>
+			<resource name="no_gallery">No Gallery</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="cancel">Cancel</resource>
+			<resource name="MediaGalleries_Button_Download">Download</resource>
+			<resource name="MediaGalleries_Button_View">View</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

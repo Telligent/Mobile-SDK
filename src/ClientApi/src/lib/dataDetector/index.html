@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Data Detector</title>
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+<body>
+	<strong>Tests written to console...</strong>
+	<script src="../../jquery.min.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+	<script src="../../test.js"></script>
+	<script src="../util/util.js"></script>
+	<script src="dataDetector.js"></script>
+
+	<script type="text/javascript">
+	require(['dataDetector'], function(DataDetector, $, global, undef) {
+
+		test("transform phone numbers", function(){
+			var detector = new DataDetector();
+			return detector.detect('abc (555) 123-4567 def') == 'abc <a href="tel:5551234567">(555) 123-4567</a> def';
+		});
+		test("transform multiple phone numbers", function(){
+			var detector = new DataDetector();
+			return detector.detect('abc (555) 123-4567 def 321.987.6543 ') == 'abc <a href="tel:5551234567">(555) 123-4567</a> def <a href="tel:3219876543">321.987.6543</a> ';
+		});
+		test("ignore script", function(){
+			var detector = new DataDetector();
+			return detector.detect('abc (555) 123-4567 def <script>321.987.6543<\/script> 321.987.6543 ') == 'abc <a href="tel:5551234567">(555) 123-4567</a> def <script>321.987.6543<\/script> <a href="tel:3219876543">321.987.6543</a> ';
+		});
+		test("ignore a", function(){
+			var detector = new DataDetector();
+			return detector.detect('abc (555) 123-4567 def <a>321.987.6543<\/a> 321.987.6543 ') == 'abc <a href="tel:5551234567">(555) 123-4567</a> def <a>321.987.6543<\/a> <a href="tel:3219876543">321.987.6543</a> ';
+		});
+		test("ignore style", function(){
+			var detector = new DataDetector();
+			return detector.detect('abc (555) 123-4567 def <style>321.987.6543<\/style> 321.987.6543 ') == 'abc <a href="tel:5551234567">(555) 123-4567</a> def <style>321.987.6543<\/style> <a href="tel:3219876543">321.987.6543</a> ';
+		});
+		test("ignore textarea", function(){
+			var detector = new DataDetector();
+			return detector.detect('abc (555) 123-4567 def <textarea>321.987.6543<\/textarea> 321.987.6543 ') == 'abc <a href="tel:5551234567">(555) 123-4567</a> def <textarea>321.987.6543<\/textarea> <a href="tel:3219876543">321.987.6543</a> ';
+		});
+		test("support pattern options and encode", function(){
+			var detector = new DataDetector({
+				patterns: {
+					telephone: 'A&B'
+				}
+			});
+			return detector.detect('abc (555) 123-4567 def A&B') == 'abc (555) 123-4567 def  <a href="tel:">A&amp;B</a> ';
+		});
+
+	}, jQuery, window);
+	</script>
+</body>
+</html>

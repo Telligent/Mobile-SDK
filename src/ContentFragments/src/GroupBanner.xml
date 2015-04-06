@@ -1,0 +1,195 @@
+<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:GroupBanner_Name}" version="7.0.0.1" instanceIdentifier="19db5de0a1654ea594b3a1540cf3d553" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="group-banner">
+	<contentScript>
+<![CDATA[
+#set ($accessingUser = $core_v2_user.Accessing)
+
+#set($groupId = false)
+#set($group = false)
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#if ($groupId)
+	#set($group = $core_v2_group.Get("%{Id=$groupId}"))
+#end
+#if (!$group)
+	$core_v2_widget.Hide()
+#end
+
+#set ($canReadGroup = $core_v2_nodePermission.Get("groups", $group.Id, "Group_ReadGroup").IsAllowed)
+
+#set ($isRegistered = $core_v2_user.IsRegistered($accessingUser.Id))
+#set ($groupUser = $core_v2_groupUserMember.Get($group.Id, "%{UserId = $accessingUser.Id}"))
+#set ($membershipType = "None")
+#set ($membershipType = $groupUser.MembershipType)
+
+#set ($navigationItems = false)
+#if ($canReadGroup)
+	#set ($navigationItems = $core_v2_customNavigation.FromWidget($core_v2_utility.ParseGuid('ab92f9a89af24721bba1c464c1334be6'), 'navigation', "%{Url=$core_v2_page.Url, GroupId=$group.Id}"))
+#end
+
+#if ($group.ParentGroupId < 1)
+	## site-level data if root group
+	#set ($siteInfo = $core_v2_infoResult.Get())
+	#set ($groupName = $siteInfo.SiteName)
+	#set ($groupAvatar = $core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 120, 120, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }"))
+	#set ($groupDescription = $siteInfo.SiteDescription)
+#else
+	## otherwise, normal group
+	#set ($groupName = $group.Name)
+	#set ($groupAvatar = $core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 120, 120, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }"))
+	#set ($groupDescription = $group.Description)
+#end
+
+<div class="banner">
+	<div class="avatar">
+		$!groupAvatar
+	</div>
+	<h1>$!groupName</h1>
+
+	<div class="ui-links actions" data-maxlinks="0">
+		<ul>
+			#if ($group && $group.GroupType != 'Joinless')
+				#set ($member = $core_v2_groupUserMember.Get($group.Id, "%{ UserId = $accessingUser.Id }"))
+				#set ($canJoinGroup = $core_v2_nodePermission.Get("groups", $group.Id, "Group_JoinGroup").IsAllowed)
+				#set ($canJoinGroupByRequest = $core_v2_nodePermission.Get("groups", $group.Id, "Group_JoinGroupByRequest").IsAllowed)
+
+				#set ($groupLeaveResource = '')
+				#if ($member.MembershipType == "PendingMember")
+					#set ($groupLeaveResource = $core_v2_language.GetResource('Group_CancelledJoinRequest'))
+				#else
+					#set ($groupLeaveResource = $core_v2_language.GetResource('Group_Left'))
+				#end
+
+				<script>$core_v2_widget.RenderFile('ui.js')</script>
+				<script type="text/javascript">
+					jQuery(function(j){
+						jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+							j.telligent.evolution.widgets.groupBanner.register({
+								groupId: $group.Id,
+								userId: $accessingUser.Id,
+								canJoinGroup: #if($canJoinGroup) true,#else false,#end
+								canJoinGroupByRequest: #if($canJoinGroupByRequest) true,#else false,#end
+								joinMessageLinkName: 'widget.${core_v2_widget.WrapperElementId}.join',
+								requestJoinMessageLinkName: 'widget.${core_v2_widget.WrapperElementId}.requestjoin',
+								cancelMessageLinkName: 'widget.${core_v2_widget.WrapperElementId}.canceljoin',
+								requestJoinUrl: #if(!$canJoinGroup) "$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('group-requestmembership', $group.Id))",#else null,#end
+								cancelConfirmMessage: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource("Hubs_Membership_LeaveConfirm"))',
+								joinedText:'$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Group_Joined'))',
+								leftText:'$core_v2_encoding.JavascriptEncode($groupLeaveResource)'
+							});
+						});
+					});
+				</script>
+
+				#if (!$member.IsRoleMember && ($member.MembershipType == "Owner" || $member.MembershipType == "Manager" || $member.MembershipType == "Member" || $member.MembershipType == "PendingMember"))
+					#set ($canLeaveGroup = $member.MembershipType != "Owner" || $core_v2_groupUserMember.List($groupId, "%{MembershipType = 'Owner', PageSize = 1}").TotalCount > 1)
+					#if ($canLeaveGroup)
+						<li>
+							<a href="#" class="internal-link leave-group" data-messagename="widget.${core_v2_widget.WrapperElementId}.canceljoin">
+								#if ($membershipType == "PendingMember")
+									$core_v2_language.GetResource("Hubs_CancelJoinRequest")
+								#else
+									$core_v2_language.GetResource("Hubs_LeaveGroup")
+								#end
+							</a>
+						</li>
+					#end
+				#elseif ($canJoinGroupByRequest || $canJoinGroup)
+					#if ($group.GroupType == "PublicOpen")
+						<li>
+							<a href="#" class="internal-link join-group" data-messagename="widget.${core_v2_widget.WrapperElementId}.join">
+								$core_v2_language.GetResource('Hubs_JoinGroup')
+							</a>
+						</li>
+						#set($hasLinks = true)
+					#elseif ($group.GroupType == "PrivateListed")
+						<li>
+							## If this banner rendering was directly following a leave, don't immediately pop up a re-join message
+							#set ($justLeftGroup = false)
+							#set ($justLeftGroup = $core_v2_page.GetQueryStringValue('w_justleft'))
+
+							<a href="#" class="internal-link join-group" data-messagename="widget.${core_v2_widget.WrapperElementId}.requestjoin">
+								$core_v2_language.GetResource('Hubs_ApplyToJoin')
+							</a>
+
+							#if (!$justLeftGroup)
+								<script type="text/javascript">
+									jQuery(function(j){
+										jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+											j.telligent.evolution.mobile.confirm('$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('private_group_request_access'))', function(v) {
+												if (v) {
+													j.telligent.evolution.messaging.publish('widget.${core_v2_widget.WrapperElementId}.requestjoin', {});
+												}
+											});
+										});
+									});
+								</script>
+							#end
+						</li>
+					#end
+				#elseif (!$isRegistered)
+					<script type="text/javascript">
+						jQuery(function(j){
+							jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+								j.telligent.evolution.mobile.confirm('$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('private_group_login'))', function(v) {
+									if (v) {
+										j.telligent.evolution.mobile.load('$core_v2_encoding.JavascriptEncode($mobile_v1_authentication.Login())');
+									}
+								});
+							});
+						});
+					</script>
+				#end
+			#end
+
+			#set ($bookmarkableContentId = $group.ContainerId)
+			#set ($bookmarkableContentTypeId = $core_v2_group.ContentTypeId)
+			#if ($core_v2_bookmark.SupportsBookmarks($bookmarkableContentTypeId) && $core_v2_bookmark.CanBookmark($bookmarkableContentId, $bookmarkableContentTypeId) && $core_v2_bookmark.CanUnBookmark($bookmarkableContentId, $bookmarkableContentTypeId))
+				<li>$core_v2_ui.Bookmark($bookmarkableContentId, $bookmarkableContentTypeId)</li>
+			#end
+			<li class="action-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+			<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+		</ul>
+	</div>
+
+	#if ($navigationItems)
+		#foreach ($navigationItem in $navigationItems)
+			#beforeall
+			<div class="ui-links applications" data-minlinks="100" data-animate="true">
+				<ul>
+			#each
+				#if ($mobile_v1_url.IsRedirected($navigationItem.Url) && $navigationItem.CssClass != 'internal-link view-group')
+					<li>
+						<a href="$core_v2_encoding.HtmlAttributeEncode($navigationItem.Url)">$navigationItem.Label</a>
+					</li>
+				#end
+			#afterall
+					<li class="application-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+					<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+				</ul>
+			</div>
+		#end
+	#end
+</div>
+]]>
+	</contentScript>
+	<headerScript></headerScript>
+	<configuration></configuration>
+	<languageResources>
+		<language key="en-us">
+			<resource name="GroupBanner_Name">Group Banner</resource>
+			<resource name="Hubs_LeaveGroup">Leave</resource>
+			<resource name="Hubs_CancelJoinRequest">Cancel join request</resource>
+			<resource name="Hubs_JoinGroup">Join</resource>
+			<resource name="Hubs_ApplyToJoin">Request membership</resource>
+			<resource name="Group_Joined">You have joined this group.</resource>
+			<resource name="Group_Left">You have left this group.</resource>
+			<resource name="Group_CancelledJoinRequest">You have canceled your join request.</resource>
+			<resource name="Hubs_Membership_LeaveConfirm">Are you sure you want to leave this group?</resource>
+			<resource name="more">More</resource>
+			<resource name="cancel">Cancel</resource>
+			<resource name="private_group_login">Would you like to login to access this private group?</resource>
+			<resource name="private_group_request_access">Would you like to request access to this private group?</resource>
+		</language>
+	</languageResources>
+  </scriptedContentFragment>
+</scriptedContentFragments>

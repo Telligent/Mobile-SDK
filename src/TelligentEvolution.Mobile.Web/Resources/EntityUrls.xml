@@ -1,0 +1,250 @@
+﻿<resources>
+	<!--
+
+	<entityUrls>
+		<entityUrl url="~/PATH_TO_PAGE_WHERE_{TOKEN_NAME}_IS_REPLACED_WITH_ID_FROM_ENDPOINT">
+			<tokens>
+				<token name="TOKEN_NAME" entityType="ENTITY_NAME" [relationship="STRING_EQUALS"] />
+				...
+			</tokens>
+			<requirements>
+				<requirement entityType="ENTITY_NAME" [relationship="STRING_EQUALS"] [idEquals="STRING_EQUALS"] [applicationTypeIdEquals="GUID_EQUALS"] [containerTypeIdEquals="GUID_EQUALS"] />
+			</requirements>
+		</entityUrl>
+		...
+	</entityUrls>
+	<extensions>
+		<extension type="FULL_TYPE_NAME_OF_ISCRIPTEDCONTENTFRAGMENTEXTENSION_IMPLEMENTATION" />
+		...
+	</extensions>
+	<styleSheets>
+		<styleSheet>
+			CSS
+		</styleSheet>
+		...
+	</styleSheets>
+	<javaScripts>
+		<javaScript>
+			Script
+		</javaScript>
+		...
+	</javaScripts>
+
+	-->
+
+	<entityUrls>
+
+		<entityUrl url="~/activities/{ActivityStoryId}">
+			<tokens>
+				<token name="ActivityStoryId" entityType="ActivityStory" />
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-activitylist" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+		
+		<entityUrl url="~/conversations/{ConversationId}">
+			<tokens>
+				<token name="ConversationId" entityType="Conversation" />
+			</tokens>
+		</entityUrl>
+		
+		<entityUrl url="~/members/{UserId}">
+			<tokens>
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-userprofile" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/members/{UserId}/activity">
+			<tokens>
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-activitylist" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/members/{UserId}/blogs">
+			<tokens>
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-blogs" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/members/{UserId}/groups">
+			<tokens>
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-grouplist" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/members/{UserId}/friends">
+			<tokens>
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-friendshiplist" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/members/{UserId}/bookmarks">
+			<tokens>
+				<token name="UserId" entityType="User" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="user-favoritelist" />
+				<requirement entityType="ThemeType" idEquals="0c647246-6735-42f9-875d-c8b991fe739b" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="home"/>
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}/members">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="members" />
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}/subgrouplist">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="subgrouplist"/>
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}/tags">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="taglist" />
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}/forums">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="forums-grouplist" />
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+		
+		<entityUrl url="~/forums/{ForumId}">
+			<tokens>
+				<token name="ForumId" entityType="Forum" />
+			</tokens>
+		</entityUrl>
+		
+		<entityUrl url="~/forumthreads/{ForumThreadId}">
+			<tokens>
+				<token name="ForumThreadId" entityType="ForumThread" />
+			</tokens>
+		</entityUrl>
+
+		<entityUrl url="~/forumthreads/{ForumThreadId}?ForumReplyId={ForumReplyId}">
+			<tokens>
+				<token name="ForumThreadId" entityType="ForumThread" />
+				<token name="ForumReplyId" entityType="ForumReply" />
+			</tokens>
+		</entityUrl>
+		
+		<entityUrl url="~/groups/{GroupId}/blogs">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="blogs-postlist" />
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+
+		<entityUrl url="~/blogs/{BlogId}">
+			<tokens>
+				<token name="BlogId" entityType="Blog" />
+			</tokens>
+		</entityUrl>
+		
+		<entityUrl url="~/blogposts/{BlogPostId}">
+			<tokens>
+				<token name="BlogPostId" entityType="BlogPost" />
+			</tokens>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}/wikis">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="wikis-wikilist" />
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+		
+		<entityUrl url="~/wikis/{WikiId}">
+			<tokens>
+				<token name="WikiId" entityType="Wiki" />
+			</tokens>
+		</entityUrl>
+		
+		<entityUrl url="~/wikipages/{WikiPageId}">
+			<tokens>
+				<token name="WikiPageId" entityType="WikiPage" />
+			</tokens>
+		</entityUrl>
+
+		<entityUrl url="~/groups/{GroupId}/media">
+			<tokens>
+				<token name="GroupId" entityType="Group" />
+			</tokens>
+			<requirements>
+				<requirement entityType="Page" idEquals="media-grouplist" />
+				<requirement entityType="ThemeType" idEquals="c6108064-af65-11dd-b074-de1a56d89593" />
+			</requirements>
+		</entityUrl>
+		
+		<entityUrl url="~/media/{GalleryId}">
+			<tokens>
+				<token name="GalleryId" entityType="Gallery" />
+			</tokens>
+		</entityUrl>
+		
+		<entityUrl url="~/mediafiles/{MediaId}">
+			<tokens>
+				<token name="MediaId" entityType="Media" />
+			</tokens>
+		</entityUrl>
+		
+	</entityUrls>
+</resources>

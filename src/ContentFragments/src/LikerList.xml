@@ -1,0 +1,77 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:LikerList_Name}" version="7.0.0.1" instanceIdentifier="e0331369e7ad479c8c21b5bc625ca681" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="liker-list">
+		<contentScript>
+		<![CDATA[
+#set($contentTypeId = false)
+#if ($core_v2_page.GetQueryStringValue('ContentTypeId').length > 0)
+	#set($contentTypeId = $core_v2_utility.ParseGuid($core_v2_page.GetQueryStringValue('ContentTypeId')))
+#end
+#set($contentId = false)
+#if ($core_v2_page.GetQueryStringValue('ContentId').length > 0)
+	#set($contentId = $core_v2_utility.ParseGuid($core_v2_page.GetQueryStringValue('ContentId')))
+#end
+#set($typeId = false)
+#if ($core_v2_page.GetQueryStringValue('TypeId').length > 0)
+	#set($typeId = $core_v2_utility.ParseGuid($core_v2_page.GetQueryStringValue('TypeId')))
+#end
+
+#if (!$contentTypeId || !$contentId)
+	$core_v2_widget.Hide()
+#end
+
+#set($content = false)
+#set($content = $core_v2_content.Get($contentId, $contentTypeId))
+#if ($content)
+	<div class="banner condensed">
+		<div class="context">
+			#if ($content.Application)
+				#if ($content.Application.Container && $content.Application.Container.Id != $content.Application.Id)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($content.Application.Container.Url)">$!content.Application.Container.HtmlName('Web')</a>
+				#end
+				#if ($content.Application.Id != $content.Id)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($content.Application.Url)">$!content.Application.HtmlName('Web')</a>
+				#end
+			#end
+			<a href="$core_v2_encoding.HtmlAttributeEncode($content.Url)">$!content.HtmlName('Web')</a>
+			<h1>$core_v2_language.GetResource('likers')</h1>
+		</div>
+	</div>
+
+#end
+
+## load and render likers
+<div class="post-list likers">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.likerList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			contentId: '$contentId',
+			contentTypeId: '$contentTypeId',
+			typeId: #if ($typeId) '$typeId' #else '' #end
+		});
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+	  	<resource name="LikerList_Name">Like List</resource>
+		<resource name="no_likers">No Likers</resource>
+		<resource name="likers">Likers</resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

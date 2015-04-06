@@ -1,0 +1,25 @@
+##
+## Ajax callback for loading more likers
+##
+
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+
+#set($contentTypeId = false)
+#if ($core_v2_page.GetQueryStringValue('w_contentTypeId').length > 0)
+	#set($contentTypeId = $core_v2_utility.ParseGuid($core_v2_page.GetQueryStringValue('ContentTypeId')))
+#end
+
+#set($contentId = false)
+#if ($core_v2_page.GetQueryStringValue('w_contentId').length > 0)
+	#set($contentId = $core_v2_utility.ParseGuid($core_v2_page.GetQueryStringValue('ContentId')))
+#end
+
+#set($typeId = false)
+#if ($core_v2_page.GetQueryStringValue('w_typeId').length > 0)
+	#set($typeId = $core_v2_utility.ParseGuid($core_v2_page.GetQueryStringValue('TypeId')))
+#end
+
+#if (!$contentTypeId || !$contentId)
+	$core_v2_widget.Hide()
+#end
+$core_v2_widget.ExecuteFile('list.vm')

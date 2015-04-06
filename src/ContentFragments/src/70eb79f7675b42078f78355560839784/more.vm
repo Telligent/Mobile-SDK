@@ -1,0 +1,24 @@
+##
+## Ajax callback for loading more forums
+##
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set ($filter = false)
+#set ($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set($threadId = false)
+#set($threadId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('ForumThreadId')))
+#if (!$threadId)
+	$core_v2_widget.Hide()
+#end
+
+#set($thread = $core_v2_forumThread.Get($threadId))
+#set($forum = $core_v2_forum.Get($thread.ForumId))
+#set($replies = false)
+
+$core_v2_widget.ExecuteFile('list.vm')

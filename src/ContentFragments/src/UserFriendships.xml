@@ -1,0 +1,121 @@
+<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:UserFriendships_Name}" version="7.0.0.1" instanceIdentifier="edd96f71e18449ad8c8539f577e8b9fa" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="user-friendships">
+	<contentScript>
+<![CDATA[
+
+#set ($userId = false)
+#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+#set ($user = false)
+#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+#if (!$user)
+	$core_v2_widget.Hide()
+#end
+
+#set($pageSize = $core_v2_widget.GetIntValue('pageSize', 5))
+#set($pageIndex = 0)
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">$user.DisplayName</a>
+		<h1>$!core_v2_language.FormatString($core_v2_language.GetResource('UserFriendships_Title'), $user.DisplayName)</h1>
+	</div>
+	<div class="avatar">$!core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 40, 40, "%{ alt = $user.DisplayName, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+#set ($isUserAccessing = false)
+#if ($user.Id == $core_v2_user.Accessing.Id)
+	#set ($isUserAccessing = true)
+#end
+#set($filter = 'friends')
+#if ($isUserAccessing)
+	#set($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+	<div class="ui-links filters" data-minlinks="50" data-animate="true">
+		<ul class="activity-filters">
+			<li><a href="#" data-filter="friends" #if($filter == 'friends') data-selected #end>$core_v2_language.GetResource('UserFriendships_FriendsLink')</a></li>
+
+			#set ($reviewFriendshipCount = $core_v2_friendship.List("%{ FriendshipState = 'Pending', RecipientId = $user.Id, PageIndex = 0, PageSize = 1 }").TotalCount)
+			<li>
+				<a href="#" data-filter="review" #if($filter == 'review') data-selected #end>
+					$core_v2_language.GetResource('UserFriendships_ReviewLink')
+					#if($reviewFriendshipCount > 0)
+						<strong>(${reviewFriendshipCount})</strong>
+					#end
+				</a>
+			</li>
+
+			#set ($pendingFriendshipCount = $core_v2_friendship.List("%{ FriendshipState = 'Pending', RequestorId = $user.Id, PageIndex = 0, PageSize = 1 }").TotalCount)
+			<li>
+				<a href="#" data-filter="pending" #if($filter == 'pending') data-selected #end>
+					$core_v2_language.GetResource('UserFriendships_PendingLink')
+					#if($pendingFriendshipCount > 0)
+						<strong>(${pendingFriendshipCount})</strong>
+					#end
+				</a>
+			</li>
+		</ul>
+	</div>
+#end
+
+## load and render friendships
+<div class="post-list friendships $filter">
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.userFriendships.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+		filter: '$filter',
+		moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+		pageSize: $pageSize,
+		friendshipDeleteFriendConfirmation: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UserFriendships_FriendDelete_Confirm'))',
+		friendshipRequestCancelConfirmation: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UserFriendships_CancelFriendship_Confirm'))',
+		followText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UserFriendships_Follow'))',
+		unfollowText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UserFriendships_Unfollow'))',
+		followedText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UserFriendships_Followed'))',
+		unfollowedText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UserFriendships_Unfollowed'))'
+		});
+	});
+});
+</script>
+
+]]>
+</contentScript>
+
+<headerScript></headerScript>
+<configuration>
+	<propertyGroup id="options">
+		<property id="pageSize" dataType="int" defaultValue="5" />
+	</propertyGroup>
+</configuration>
+<languageResources>
+	<language key="en-us">
+		<resource name="UserFriendships_Name">Friendship List</resource>
+		<resource name="UserFriendships_FriendsLink">Friends</resource>
+		<resource name="UserFriendships_ReviewLink">Requests to Review</resource>
+		<resource name="UserFriendships_PendingLink">Your Requests</resource>
+		<resource name="UserFriendships_Title">Friends</resource>
+		<resource name="UserFriendships_No_Friends">No users have been added to {0}'s friends list.</resource>
+		<resource name="UserFriendships_No_Review">You do not have any friendship requests to review.</resource>
+		<resource name="UserFriendships_No_Pending">You do not have any pending requests.</resource>
+		<resource name="UserFriendships_Approve_Request">Approve</resource>
+		<resource name="UserFriendships_Reject_Request">Reject</resource>
+		<resource name="UserFriendships_Cancel_Request">Cancel</resource>
+		<resource name="UserFriendships_SendMessage">Send a Message</resource>
+		<resource name="UserFriendships_Follow">Start Following</resource>
+		<resource name="UserFriendships_Unfollow">Stop Following</resource>
+		<resource name="UserFriendships_Followed">Following started</resource>
+		<resource name="UserFriendships_Unfollowed">Following stopped</resource>
+		<resource name="UserFriendships_Cancel">Cancel</resource>
+		<resource name="UserFriendships_FriendDelete_Confirm">Are you sure you want to delete this friendship?</resource>
+		<resource name="UserFriendships_CancelFriendship_Confirm">Are you sure you want to cancel this friendship request?</resource>
+	</language>
+</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

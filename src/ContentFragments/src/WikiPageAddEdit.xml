@@ -1,0 +1,134 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:WikiPageAddEdit_Name}" version="7.0.0.1" instanceIdentifier="c216859125284e928e76fa8e045bc9e4" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="wiki-page-add-edit">
+		<contentScript>
+		<![CDATA[
+#set ($pageName = $mobile_v1_url.Current)
+#set ($mode = false)
+#set ($contentTypeId = $core_v2_wikiPage.ContentTypeId)
+
+#set($wikiPageId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('WikiPageId')))
+#if($wikiPageId < 0)
+	#set($wikiId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('WikiId')))
+	#if($wikiId < 0)
+		#$core_v2_widget.Hide()
+	#end
+#end
+
+
+#if($pageName == 'wiki-addwikipage')
+	#set ($mode = 'add')
+#elseif ($pageName == 'wikipage-edit')
+	#set ($mode = 'edit')
+	#set ($editWikiPage = $core_v2_wikiPage.Get("%{Id = $wikiPageId}"))
+	#set($wikiId = $editWikiPage.WikiId)
+	#if($editWikiPage.ParentPageId > 0)
+		#set($parentWikiPage = $core_v2_wikiPage.Get("%{Id = $editWikiPage.ParentPageId}"))
+	#end
+#else
+	#$core_v2_widget.Hide()
+#end
+
+#set($wiki = $core_v2_wiki.Get("%{Id = $wikiId}"))
+
+#set ($titleId = $core_v2_widget.UniqueId('Title'))
+#set ($parentId = $core_v2_widget.UniqueId('ParentPage'))
+#set ($bodyId = $core_v2_widget.UniqueId('Body'))
+#set ($subscribeId = $core_v2_widget.UniqueId('Subscribe'))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($wiki.Group.Url)">$wiki.Group.Name</a>
+		<a href="$core_v2_encoding.HtmlAttributeEncode($wiki.Url)">$wiki.Name</a>
+		<h1>
+			#if ($editWikiPage)
+				$editWikiPage.Title
+			#else
+				$core_v2_language.GetResource('new_page')
+			#end
+		</h1>
+	</div>
+</div>
+<fieldset>
+
+	## Title
+	<div class="form-field text">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($titleId)">$core_v2_language.GetResource('title')</label>
+		<input type="text" maxlength="256" id="$core_v2_encoding.HtmlAttributeEncode($titleId)" value="#if($mode=='edit')$editWikiPage.Title#end" />
+	</div>
+
+	## Parent
+	#if(!$editWikiPage.IsDefaultPage)
+		<div class="form-field text lookup">
+			<label for="$core_v2_encoding.HtmlAttributeEncode($parentId)">$core_v2_language.GetResource('parentPage')</label>
+			<input type="text" maxlength="256" id="$core_v2_encoding.HtmlAttributeEncode($parentId)" #if($parentWikiPage.Id) value="$parentWikiPage.Id" #end/>
+		</div>
+	#end
+
+	## TinyMCE
+	<div class="form-field editor">
+		<label for="$core_v2_widget.UniqueId('body')" class="field-item-header hidden">$core_v2_language.GetResource('Body')</label>
+		<span class="field-item-input">$core_v2_editor.Render('body',"%{Width='100%', Height='250px', Value='$!editWikiPage.Body()', ContentTypeId=$core_v2_wikiPage.ContentTypeId}")</span>
+	</div>
+
+	## Email Replies
+	#if ($core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+		<div class="form-field checkbox inline-label">
+			<label for="$core_v2_encoding.HtmlAttributeEncode($subscribeId)">$core_v2_language.GetResource('subscribe')</label>
+			<input id="$core_v2_encoding.HtmlAttributeEncode($subscribeId)" type="checkbox" #if($mode == 'edit' && $core_v2_wikiPage.IsSubscribed($editWikiPage.Id)) checked="checked" #elseif($mode =='add') checked="checked" #end/>
+		</div>
+	#end
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.wikiPageAddEdit.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			wikiId: $wikiId,
+			wikiPageId: #if ($editWikiPage) $editWikiPage.Id #else null #end,
+			mode: '$core_v2_encoding.JavascriptEncode($mode)',
+			lookupPagesUrl:'$core_v2_widget.GetExecutedFileUrl('LookupPages.vm')',
+			getBodyContent: function() { return $core_v2_editor.GetContentScript('body') },
+			noPageMatchesText:'$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('WikiPage_NoMatches'))',
+			titleInput: '#$core_v2_encoding.JavascriptEncode($titleId)',
+			parentInput: '#$core_v2_encoding.JavascriptEncode($parentId)',
+			bodyInput: '#$core_v2_encoding.JavascriptEncode($bodyId)',
+			subscribeInput: '#$core_v2_encoding.JavascriptEncode($subscribeId)',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			editLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('edit'))',
+			userCanMovePage: #if($userCanMovePage) true#else false#end,
+			#if($parentWikiPage)
+				parentPageTitle:'$core_v2_encoding.JavascriptEncode($core_v2_language.Truncate($parentWikiPage.Title, 60, "..."))',
+			#end
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="WikiPageAddEdit_Name">Add Edit Wiki Page</resource>
+			<resource name="post">Post</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="title">Title</resource>
+			<resource name="parentPage">Parent page</resource>
+			<resource name="parentPlace">Parent page...</resource>
+			<resource name="body">Body</resource>
+			<resource name="bodyPlace">Body...</resource>
+			<resource name="subscribe">Notify me about updates</resource>
+			<resource name="WikiPage_NoMatches">No matches can be found</resource>
+			<resource name="new_page">New page</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

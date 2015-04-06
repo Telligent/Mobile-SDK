@@ -1,0 +1,14 @@
+##
+## Ajax callback to add a conversation
+##
+
+$core_v2_page.SetContentType('application/json')
+
+#set($body = $core_v2_ui.FormatTextAsHtml($core_v2_page.GetFormValue('Body'), "%{ConvertToParagraphs='true', DetectMediaUrls='true'}"))
+
+#set($response = $core_v2_conversation.Create($core_v2_page.GetFormValue('Subject'), $body, $core_v2_page.GetFormValue('Participants')))
+#if ($response.Errors.Count > 0)
+	$core_v2_page.SendJsonError($response.Errors)
+#else
+	{"conversationUrl":"$core_v2_encoding.JavascriptEncode($response.Url)"}
+#end

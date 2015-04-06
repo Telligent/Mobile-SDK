@@ -1,0 +1,130 @@
+#if (!$replies)
+	#set($replies = $core_v2_forumReply.List($threadId, "%{ForumReplyQueryType=$filter,PageSize=5,PageIndex=$pageIndex,IncludeThreadStarter='False'}"))
+#end
+#if ($pageIndex > 0)
+	#set($targetPageIndex = $pageIndex - 1)
+	<a href="#" data-pageindex="$targetPageIndex" class="view-more">$core_v2_language.GetResource('reply_load_more')</a>
+#end
+#foreach($reply in $replies)
+#each
+	#set ($canEditReply = false)
+	#set ($canEditReply = $core_v2_nodePermission.Get("forums", $forum.Id, "Forum_ModifyPost", "%{ PostId = '${reply.Id}', PostType = 'replies'}").IsAllowed)
+
+	#set ($canDeleteReply = false)
+	#set ($canDeleteReply = $core_v2_nodePermission.Get("forums", $forum.Id, "Forum_DeletePost", "%{ PostId = '${reply.Id}', PostType = 'replies'}").IsAllowed)
+
+	<div class="post-list-item content-item forumreply #if($thread.ThreadType == 'QuestionAndAnswer')#if ($reply.IsAnswer) answer#elseif($reply.IsSuggestedAnswer) suggested-answer#end#end" data-replyid="$reply.Id">
+		<div class="post full">
+			<div class="details">
+				<div class="date">$core_v2_language.FormatAgoDate($reply.Date)</div>
+				<div class="avatar">
+					#if ($reply.Author.ProfileUrl)
+									<a href="$core_v2_encoding.HtmlAttributeEncode($reply.Author.ProfileUrl)" class="internal-link view-user-profile">
+										$core_v2_ui.GetResizedImageHtml($reply.Author.AvatarUrl, 24, 24, "%{border='0', alt=$reply.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+									</a>
+							#else
+									$core_v2_ui.GetResizedImageHtml($reply.Author.AvatarUrl, 24, 24, "%{border='0', alt=$reply.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+							#end
+				</div>
+				<div class="author">
+					#if ($reply.Author.ProfileUrl)
+								<a href="$core_v2_encoding.HtmlAttributeEncode($reply.Author.ProfileUrl)" class="internal-link view-user-profile">
+									$reply.Author.DisplayName
+								</a>
+						#else
+								$reply.Author.DisplayName
+						#end
+				</div>
+			</div>
+			<div class="content">
+				<div class="user-generated-content">
+					#if ($reply.ParentId && $reply.ParentId > 0)
+						#set ($parent = false)
+						#set ($parent = $core_v2_forumReply.Get($reply.ParentId))
+						#if ($parent)
+							#if ($reply.Id == $reply.ParentId)
+								<p class="in-reply-to">$core_v2_language.FormatString($core_v2_language.GetResource('InReplyTo'), $core_v2_encoding.HtmlAttributeEncode($thread.Url), $thread.Author.DisplayName)</p>
+							#else
+								<p class="in-reply-to">$core_v2_language.FormatString($core_v2_language.GetResource('InReplyTo'), $core_v2_encoding.HtmlAttributeEncode($parent.Url), $parent.Author.DisplayName)</p>
+							#end
+						#end
+					#end
+					$mobile_v1_dataFormat.Detect($reply.Body('Web'))
+				</div>
+				#if ($reply.File)
+					<p><a href="$core_v2_encoding.HtmlAttributeEncode($reply.File.FileUrl)" class="internal-link download-attachment">$reply.File.FileName</a></p>
+				#end
+				#if($reply.EmailFiles && $reply.EmailFiles.Count > 0)
+					#foreach($emailFile in $reply.EmailFiles)
+						<p><a href="$core_v2_encoding.HtmlAttributeEncode($emailFile.DownloadUrl)" class="internal-link download-attachment">$emailFile.FileName</a></p>
+					#end
+				#end
+			</div>
+			#set($showLikes = false)
+			#if($accessingUserIsRegistered && $core_v2_like.CanLike($reply.ContentId, $core_v2_forumReply.ContentTypeId))
+				#set($showLikes = true)
+			#end
+			#set($canReply = $core_v2_nodePermission.Get("forums", $forum.Id, "Forum_CreateReply", "%{ PostId = '${reply.Id}', PostType = 'replies'}").IsAllowed)
+			#set($maxLinkCount = 0)
+			#if ($showLikes)
+				#set($maxLinkCount = $maxLinkCount + 1)
+			#end
+			#if ($canReply)
+				#set($maxLinkCount = $maxLinkCount + 1)
+			#end
+			<div class="actions ui-links" data-minlinks="0" data-maxlinks="$maxLinkCount">
+				<ul>
+					#if ($showLikes)
+						<li class="action-like">
+						   #set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+						   $core_v2_ui.Like($reply.ContentId, $core_v2_forumReply.ContentTypeId, "%{ Format = $format }")
+						</li>
+					#end
+
+					#if($canReply)
+						<li class="action-reply">
+							<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('forumreply-addreply', $reply.Id))" class="comment">$core_v2_language.GetResource('reply')</a>
+						</li>
+					#end
+
+					#if ($thread.ThreadType == 'QuestionAndAnswer')
+						#if ($core_v2_nodePermission.Get("forums", $forum.Id, "Forum_MarkAsAnswer", "%{ PostId = '${reply.Id}', PostType = 'replies'}").IsAllowed)
+							#if ($reply.IsAnswer)
+								<li><a href="#" data-messagename="forumreply.answer-action" class="answer-action" data-action="reject-answer" data-replyid="$reply.Id">$core_v2_language.GetResource('mark_as_not_answer')</a></li>
+							#elseif ($reply.IsSuggestedAnswer)
+								<li><a href="#" data-messagename="forumreply.answer-action" class="answer-action" data-action="accept-answer" data-replyid="$reply.Id">$core_v2_language.GetResource('accept_answer')</a></li>
+								<li><a href="#" data-messagename="forumreply.answer-action" class="answer-action second-link" data-action="reject-answer" data-replyid="$reply.Id">$core_v2_language.GetResource('reject_answer')</a></li>
+							#else
+								<li><a href="#" data-messagename="forumreply.answer-action" class="answer-action" data-action="accept-answer" data-replyid="$reply.Id">$core_v2_language.GetResource('mark_as_answer')</a></li>
+							#end
+						#end
+					#end
+
+					#if ($canEditReply)
+						<li>
+							<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('forumreply-edit', $reply.Id))">$core_v2_language.GetResource('edit')</a>
+						</li>
+					#end
+					#if ($canDeleteReply)
+						<li>
+							<a href="#" data-messagename="forumreply.delete-reply" class="delete-reply" data-replyid="$reply.Id">$core_v2_language.GetResource('delete')</a>
+						</li>
+					#end
+
+					<li class="action-moderate">$core_v2_ui.Moderate($reply.ContentId, $core_v2_forumReply.ContentTypeId)</li>
+
+					<li class="action-more"><a href="#" data-more></a></li>
+					<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item forum"><div class="message norecords full">
+		#if ($filter == 'verified-answers')
+			$core_v2_language.GetResource('no_answers')
+		#else
+			$core_v2_language.GetResource('no_replies')
+		#end
+	</div></div>
+#end

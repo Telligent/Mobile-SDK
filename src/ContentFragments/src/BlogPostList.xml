@@ -1,0 +1,117 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:BlogPostList_Name}" version="7.0.0.1" instanceIdentifier="42d200b69fd4471b8e7dabce5fa81806" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="blogpost-list">
+		<contentScript>
+		<![CDATA[
+
+#set($pageSize = $core_v2_widget.GetIntValue('pageSize', 5))
+#set($pageIndex = 0)
+
+
+#set($blogId = false)
+#set($blogId = $mobile_v1_urlToken.Value('BlogId'))
+
+#if ($blogId)
+	#set($blogId = $core_v2_utility.ParseInt($blogId))
+	#set($blog = false)
+	#set($blog = $core_v2_blog.Get("%{Id = $blogId}"))
+	#if (!$blog)
+		$core_v2_widget.Hide()
+	#end
+
+	#set($contextUrl = $blog.Group.Url)
+	#set($contextName = $blog.Group.Name)
+	#set($avatarUrl = $blog.Group.AvatarUrl)
+	#set($name = $blog.Name)
+#else
+	#set($userId = false)
+	#set($userId = $mobile_v1_urlToken.Value('UserId'))
+	#if (!$userId)
+		$core_v2_widget.Hide()
+	#end
+
+	#set($userId =$core_v2_utility.ParseInt($userId))
+	#set ($user = false)
+	#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+	#if (!$user)
+		$core_v2_widget.Hide()
+	#end
+
+	#set($contextUrl = $user.ProfileUrl)
+	#set($contextName = $user.DisplayName)
+	#set($avatarUrl = $user.AvatarUrl)
+	#set($name = $core_v2_language.FormatString($core_v2_language.GetResource('Core_UserBlogPosts_Title'), $user.DisplayName))
+#end
+
+
+<div class="banner condensed with-avatar">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($contextUrl)">$!contextName</a>
+		<h1>$!name</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($avatarUrl, 40, 40, "%{ alt = $contextName, ResizeMethod = 'ZoomAndCrop' }")</div>
+	#if ($blog)
+		<div class="ui-links actions" data-maxlinks="0">
+			<ul>
+				#set ($bookmarkableContentId = $blog.ApplicationId)
+				#set ($bookmarkableContentTypeId = $core_v2_blog.ContentTypeId)
+				#if ($core_v2_bookmark.SupportsBookmarks($bookmarkableContentTypeId) && $core_v2_bookmark.CanBookmark($bookmarkableContentId, $bookmarkableContentTypeId) && $core_v2_bookmark.CanUnBookmark($bookmarkableContentId, $bookmarkableContentTypeId))
+					<li>$core_v2_ui.Bookmark($bookmarkableContentId, $bookmarkableContentTypeId)</li>
+				#end
+				<li class="action-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+				<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+			</ul>
+		</div>
+	#end
+</div>
+
+
+## load and render blog posts
+<div class="post-list blogposts">
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.blogPostList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			pageSize: $pageSize
+		});
+
+		#if($blogId && $core_v2_nodePermission.Get("blogs", $blogId, "Blog_CreatePost").IsAllowed)
+			jQuery.telligent.evolution.mobile.setHeaderButton(jQuery('<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('blog-addblogpost', $blogId))" class="add">$core_v2_language.GetResource('post')</a>'));
+		#end
+	});
+})
+
+</script>
+]]>
+</contentScript>
+	<headerScript>
+		</headerScript>
+	<configuration>
+		<![CDATA[
+		<propertyGroup id="options">
+			<property id="pageSize" dataType="int" defaultValue="5" />
+		</propertyGroup>
+		]]>
+	</configuration>
+	<languageResources>
+		<language key="en-us">
+			<resource name="BlogPostList_Name">Blog Post List</resource>
+			<resource name="no_posts">There are no posts in this blog.</resource>
+			<resource name="no_comments">No comments</resource>
+			<resource name="comment_count">1 comment</resource>
+			<resource name="comments_count">{0} comments</resource>
+			<resource name="post">New</resource>
+			<resource name="Core_UserBlogPosts_Title">Blog Posts</resource>
+			<resource name="more">More</resource>
+			<resource name="cancel">Cancel</resource>
+		</language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

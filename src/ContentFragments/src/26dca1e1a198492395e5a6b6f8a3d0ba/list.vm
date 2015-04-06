@@ -1,0 +1,41 @@
+#set ($currentTags = false)
+#set ($currentTags = $mobile_v1_urlToken.Value('TagName'))
+#if(!$currentTags)
+	$core_v2_widget.Hide()
+#end
+
+#set ($query = "%{ PageSize = $pageSize, PageIndex = $pageIndex, Tags = $currentTags, ContainerIds = $group.ContainerId }")
+#set($taggedContent = $core_v2_taggedContent.List($query))
+#foreach($content in $taggedContent)
+	#set($avatarUrl = false)
+	#if($content.Content)
+		#set($avatarUrl = $content.Content.AvatarUrl)
+		#if (!$avatarUrl && $content.Content.CreatedByUserId)
+			#set ($user = $core_v2_user.Get("%{Id=$content.Content.CreatedByUserId}"))
+			#set($avatarUrl = $user.AvatarUrl)
+		#end
+	#end
+
+	<div class="post-list-item content-item" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($content.Content.Url)">
+		<div class="post">
+			<div class="avatar">
+				#if($avatarUrl)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($content.Content.Url)" class="internal-link view-user-profile">
+						$core_v2_ui.GetResizedImageHtml($avatarUrl, 40, 40, "%{border='0', ResizeMethod='ZoomAndCrop',border='0'}")
+					</a>
+				#end
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($content.Content.Url)">$content.Content.HtmlName('Web')</a>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item"><div class="message norecords">$core_v2_language.GetResource('TaggedContentList_No_Items')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($taggedContent.TotalCount > (($taggedContent.PageIndex + 1) * $taggedContent.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

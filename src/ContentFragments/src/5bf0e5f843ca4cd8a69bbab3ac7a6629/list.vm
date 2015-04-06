@@ -1,0 +1,63 @@
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($conversations = $core_v2_conversation.List("%{PageIndex=$pageIndex,PageSize=7}"))
+#foreach($conversation in $conversations)
+#each
+	<div class="post-list-item content-item conversation #if (!$conversation.HasRead) unread#end" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($conversation.Url)" data-conversationid="$conversation.Id.ToString()">
+		<div class="post">
+			<div class="avatar">
+				#if ($conversation.FirstMessage.Author.ProfileUrl)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($conversation.FirstMessage.Author.ProfileUrl)" class="internal-link view-user-profile">
+						$core_v2_ui.GetResizedImageHtml($conversation.FirstMessage.Author.AvatarUrl, 40, 40, "%{border='0', alt=$conversation.FirstMessage.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+					</a>
+				#else
+					$core_v2_ui.GetResizedImageHtml($conversation.FirstMessage.Author.AvatarUrl, 40, 40, "%{border='0', alt=$conversation.FirstMessage.Author.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+				#end
+			</div>
+			<div class="details">
+				<div class="date">$core_v2_language.FormatAgoDate($conversation.LastMessage.CreatedDate)</div>
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($conversation.Url)">$conversation.FirstMessage.Subject</a>
+				#set ($DQ = '"')
+				#set ($authors = "")
+				#foreach ($participant in $conversation.Participants)
+				#beforeall
+					$core_v2_language.GetResource('participants_before')
+				#each
+					#set ($authors = "$authors<a href=${DQ}$core_v2_encoding.HtmlAttributeEncode($participant.ProfileUrl)${DQ}>$participant.DisplayName</a>")
+				#between
+					#set ($authors = "$authors, ")
+				#end
+				$authors
+			</div>
+			<div class="actions ui-links">
+				<ul>
+					<li>
+						<span class="detail comment">
+							#if ($conversation.MessageCount == 0)
+								$core_v2_language.GetResource('no_messages')
+							#elseif ($conversation.MessageCount == 1)
+								$core_v2_language.FormatString($core_v2_language.GetResource('message_count'), $core_v2_language.FormatNumber($conversation.MessageCount))
+							#else
+								$core_v2_language.FormatString($core_v2_language.GetResource('messages_count'), $core_v2_language.FormatNumber($conversation.MessageCount))
+							#end
+						</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item conversation"><div class="message norecords">$core_v2_language.GetResource('no_conversations')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($conversations.TotalCount > (($conversations.PageIndex + 1) * $conversations.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

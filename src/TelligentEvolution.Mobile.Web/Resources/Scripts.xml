@@ -1,0 +1,123 @@
+﻿<resources>
+	<javaScripts>
+		<javaScript>
+	  <![CDATA[
+		// set global options and initiate the mobile API
+
+		jQuery(function($){
+
+		  // Uncomment to only enable animation on iOS
+		  // $.fn.evolutionTransform.animationEnabled = $.telligent.evolution.mobile.environment.device == 'ios';
+
+		  // override activity-story-defined UI components
+				if($.telligent.evolution.ui && $.telligent.evolution.ui.components) {
+					delete $.telligent.evolution.ui.components['theater'];
+					delete $.telligent.evolution.ui.components['wikipagestory-revisions'];
+					delete $.telligent.evolution.ui.components['forumreplystory-parent'];
+				}
+
+		  // override the web preview format to not include an image
+				$.telligent.evolution.preview.defaults.template = ( '' +
+					'<div class="abbreviated-post-header shared-link"></div>' +
+					'<div class="abbreviated-post shared-link">' +
+					'   <h4 class="post-name"><a href="<%: url %>" class="external-link" target="_new" rel="nofollow"><%= title %></a></h4>' +
+					'   <% if(excerpt !== null && excerpt.length > 0){ %>' +
+					'       <div class="post-summary">' +
+					'           <%= excerpt %>' +
+					'      </div>' +
+					'   <% } %>' +
+					'</div>');
+
+		  // initiate the mobile client API (shell, navigation, storage, etc)
+		  $.telligent.evolution.mobile.init({
+
+			// navigation settings
+			defaultContentUrl: 'default',
+			navigationContentUrl: 'navigation',
+
+			// shell settings
+			// show explicit refresh button on non-ios devices
+			enableRefreshButton: ($.telligent.evolution.mobile.environment.device != 'ios'),
+			// no panning on non-ios
+			enablePan: ($.telligent.evolution.mobile.environment.device == 'ios'),
+			// soft back button only on ios full-screen/native
+			enableSoftBackButton: ($.telligent.evolution.mobile.environment.device == 'ios' && $.telligent.evolution.mobile.environment.type != 'browser'),
+			// scroll to top of content on double tap of header bar
+			doubleTapHeaderToScroll: true,
+			// focus on form inputs when associated labels are tapped
+			focusInputsOnLabelTap: false,
+
+			// loading overlay settings
+			loadingCssClass: 'loading',
+			loadingContent: '<span class="icon cw"></span>',
+			loadingOpacity: 0.7,
+
+			// animation settings
+			easing: 'cubic-bezier(0.160, 0.060, 0.450, 0.940)',
+			navigationOpenPercent: 0.8,
+			navigationOpenDuration: 275,
+
+			// Navigation Bar Animation
+
+			// Zooming/Scaling
+			navigationClosedOffsetPercent: 0.1,
+			navigationClosedZoom: 0.05,
+
+			// Uncomment to use flat parallax sliding
+			// navigationClosedOffsetPercent: -0.2,
+			// navigationClosedZoom: 0.00,
+
+			// Sheet Settings
+			sheetMaxHeightPerent: 0.7,
+			sheetCssClass: 'sheet',
+			sheetBackgroundColor: '#333',
+			sheetBackgroundOpacity: 0.7,
+
+			// default 10 minute contnet cache
+			cacheDuration:10 * 60 * 1000  // 10 minutes
+		  });
+		});
+
+			// adjust tables to be scrollable if they are larger than the content width and available height
+			  jQuery(function() {
+				  var maxHeight = 400,
+					  checkResize = function() {
+						  $('.content-fragment-content .user-generated-content .content-scrollable-wrapper').each(function() {
+							  var w = $(this);
+							  var sw = w.prop('scrollWidth') || w.width();
+							  if (sw > w.outerWidth()) {
+								  w.addClass('content-scrollable-wrapper-scrolled').css('max-height', (maxHeight * .8) + 'px');
+							  } else {
+								  w.removeClass('content-scrollable-wrapper-scrolled').css('max-height', 'none');
+							  }
+						  });
+					  }
+
+				  $.telligent.evolution.messaging.subscribe('window.scrollableheight', 'global', function(data) {
+					  maxHeight = data.height;
+					  checkResize();
+				  });
+
+				  $.telligent.evolution.messaging.subscribe('mobile.content.loaded', 'global', function() {
+					  $('.content-fragment-content .user-generated-content table, .content-fragment-content .user-generated-content pre').each(function() {
+						  var t = $(this);
+						  if (t.parents('.content-scrollable-wrapper').length == 0) {
+							  t.wrap('<div class="content-scrollable-wrapper" style="max-width: 100%; overflow: auto;"></div>');
+						  }
+					  });
+					  checkResize();
+				  });
+
+				  $.telligent.evolution.messaging.subscribe('mobile.orientationchange', 'global', function() {
+					  checkResize();
+				  });
+
+				  $(window).on('resized', function() {
+					  checkResize();
+				  });
+			  });
+
+	  ]]>
+	</javaScript>
+	</javaScripts>
+</resources>

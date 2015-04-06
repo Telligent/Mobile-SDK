@@ -1,0 +1,191 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:MediaUploadEdit_Name}" version="7.0.0.1" instanceIdentifier="0f8fca892498461cbb1609064576c23f" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="media-gallery-add-edit">
+		<contentScript>
+		<![CDATA[
+#set ($pageName = $mobile_v1_url.Current)
+#set ($mode = false)
+#set ($contentTypeId = $core_v2_media.ContentTypeId)
+
+#set($galleryId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GalleryId')))
+#if ($galleryId < 0)
+	#set($mediaId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('MediaId')))
+	#if ($mediaId < 0)
+		$core_v2_widget.Hide()
+	#end
+#end
+
+#set($editMedia = false)
+#set($gallery = false)
+#if($pageName == 'gallery-addmedia')
+	#set ($mode = 'add')
+	#set ($gallery = $core_v2_gallery.Get("%{Id = $galleryId}"))
+#elseif ($pageName == 'media-edit')
+	#set ($mode = 'edit')
+	#set ($editMedia = $core_v2_media.Get($mediaId))
+	#set ($gallery = $core_v2_gallery.Get("%{Id = $editMedia.MediaGalleryId}"))
+#else
+	$core_v2_widget.Hide()
+#end
+
+#if (!$gallery)
+	$core_v2_widget.Hide()
+#end
+
+#set($canUpload = $core_v2_nodePermission.Get('mediagalleries',$gallery.Id,'MediaGallery_AttachFileLocal').IsAllowed)
+#set($canLink = $core_v2_nodePermission.Get('mediagalleries',$gallery.Id,'MediaGallery_AttachFileRemote').IsAllowed)
+#if (!$canUpload && !$canLink)
+	$core_v2_widget.Hide()
+#end
+
+##start of upload stuff
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($userId = $accessingUser.Id)
+#set($contextId = $core_v2_uploadedFile.CreateContextId())
+
+#set($attachmentFileName = false)
+#set($attachmentUrl = false)
+#set($attachmentIsRemote = false)
+#if ($editMedia)
+	#set($attachmentFileName = $editMedia.File.FileName)
+	#set($attachmentUrl = $editMedia.File.FileUrl)
+	#set($attachmentIsRemote = $editMedia.File.IsRemoteAttachment)
+#end
+
+
+##Uploaded CSS Id's
+#set($titleId = $core_v2_widget.UniqueId('Title'))
+#set($fileTitleId = $core_v2_widget.UniqueId('fileTitle'))
+#set($saveFileId = $core_v2_widget.UniqueId('saveFile'))
+#set($bodyId = $core_v2_widget.UniqueId('Body'))
+#set ($subscribeId = $core_v2_widget.UniqueId('Subscribe'))
+
+#set($group = $gallery.Group)
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($gallery.Group.Url)">$gallery.Group.Name</a>
+		<a href="$core_v2_encoding.HtmlAttributeEncode($gallery.Url)">$gallery.Name</a>
+		#if ($editMedia)
+			<h1>$editMedia.Title</h1>
+		#else
+			<h1>$core_v2_language.GetResource('NewPost')</h1>
+		#end
+	</div>
+</div>
+
+<fieldset>
+	## Title
+	<div class="form-field text">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($titleId)">$core_v2_language.GetResource('title')</label>
+		<input type="text" maxlength="256" id="$core_v2_encoding.HtmlAttributeEncode($titleId)" value="#if($mode=='edit')$editMedia.Title#end" />
+	</div>
+
+	##File Uploads
+	<div class="form-field" id="$core_v2_widget.UniqueId('attachment')" data-upload="$canUpload" data-link="$canLink">
+		#if ($canUpload && $canLink)
+			<label for="$core_v2_widget.UniqueId('attachment_input')" class="field-item-name">$core_v2_language.GetResource('MediaGalleryPostAdmin_FileOrUrl')</label>
+		#elseif ($canUpload)
+			<label for="$core_v2_widget.UniqueId('attachment_input')" class="field-item-name">$core_v2_language.GetResource('Attachment_File')</label>
+		#elseif ($canLink)
+			<label for="$core_v2_widget.UniqueId('attachment_input')" class="field-item-name">$core_v2_language.GetResource('Attachment_Url')</label>
+		#end
+		<span class="file">
+			<input type="text" columns="90" id="$core_v2_widget.UniqueId('attachment_input')" #if($attachmentUrl && $attachmentIsRemote)value="$core_v2_encoding.HtmlAttributeEncode($attachmentUrl)"#elseif($attachmentFileName)value="$core_v2_encoding.HtmlAttributeEncode($attachmentFileName)"#end />
+		</span>
+		<div class="preview">
+		</div>
+		#if ($canUpload)
+			<span class="upload">
+				<a href="#" class="upload add" id="$core_v2_widget.UniqueId('upload')">$core_v2_language.GetResource('UploadFile')</a>
+				<a href="#" class="remove" style="margin-left: 1em;">$core_v2_language.GetResource('RemoveFile')</a>
+			</span>
+		#end
+	</div>
+
+	## TinyMCE
+	<div class="form-field editor">
+		#set($body = '')
+		#if($editMedia)
+			#set($body = $editMedia.Body('raw'))
+		#end
+
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.GetResource('body')</label>
+		$core_v2_editor.Render('PostBody', "%{Width='100%', Height='60px', Value=$body, ContentTypeId=$contentTypeId}")
+	</div>
+
+	## Email Replies
+	#if ($core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+		<div class="form-field checkbox inline-label">
+			<label for="$core_v2_encoding.HtmlAttributeEncode($subscribeId)">$core_v2_language.GetResource('subscribe')</label>
+			<input id="$core_v2_encoding.HtmlAttributeEncode($subscribeId)" type="checkbox" #if($editMedia && $core_v2_media.IsSubscribed($editMedia.Id)) checked="checked"#end/>
+		</div>
+	#end
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.mediaGalleryAddEdit.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			mode: '$mode',
+			file: {
+				fileName: '#if($attachmentFileName)$core_v2_encoding.JavascriptEncode($attachmentFileName)#end',
+				url: '#if($attachmentUrl)$core_v2_encoding.JavascriptEncode($attachmentUrl)#end',
+				isRemote:#if($attachmentIsRemote) true#else false#end,
+				isNew: false
+			},
+			attachmentId: '$core_v2_widget.UniqueId('attachment')',
+			attachmentProgressText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UploadProgress'))',
+			attachmentChangeText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('ChangeFile'))',
+			attachmentAddText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UploadFile'))',
+			previewAttachmentUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('previewAttachment.vm'))',
+			uploadContextId: '$core_v2_encoding.JavascriptEncode($contextId)',
+			uploadFileUrl : '$core_v2_encoding.JavascriptEncode($core_v2_uploadedFile.GetUploadUrl($contextId))',
+			fileId: '$!editMedia.Id',
+			mediaGalleryId: '$gallery.Id',
+			titleInput: '#$core_v2_encoding.JavascriptEncode($titleId)',
+			getBodyContent: function() { return $core_v2_editor.GetContentScript('PostBody') },
+			subscribeInput: '#$core_v2_encoding.JavascriptEncode($subscribeId)',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			editLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('edit'))',
+			lookUpUrl : "$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('lookUp.vm'))",
+			selectFileLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('file_upload'))'
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="MediaUploadEdit_Name">Media Gallery Upload Edit</resource>
+			<resource name="title">Title</resource>
+			<resource name="post">Post</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="subscribe">Notify me about comments</resource>
+			<resource name="MediaGalleryPostAdmin_FileOrUrl">File or website</resource>
+			<resource name="Attachment_File">File</resource>
+			<resource name="Attachment_Url">URL</resource>
+			<resource name="UploadFile">Upload file</resource>
+			<resource name="UploadProgress">Uploading ({0}%)...</resource>
+			<resource name="ChangeFile">Change file</resource>
+			<resource name="RemoveFile">Remove file</resource>
+			<resource name="NewPost">Upload a file</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

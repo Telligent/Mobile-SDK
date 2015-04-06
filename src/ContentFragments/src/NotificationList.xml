@@ -1,0 +1,50 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:NotificationList_Name}" version="7.0.0.1" instanceIdentifier="39aa3e84a898400d84f1fd7b8a2c033f" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="notification-list">
+		<contentScript>
+		<![CDATA[
+
+#if (!$core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+	$core_v2_widget.Hide()
+#end
+
+<div class="banner condensed">
+	<div class="context">
+		<h1>$core_v2_language.GetResource('notifications')</h1>
+	</div>
+</div>
+
+## load and render notifications
+<div class="post-list notifications">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.notificationList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			conversationNotificationTypeId: '$core_v2_conversationMessage.NotificationTypeId.ToString()'
+		});
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="NotificationList_Name">Notification List</resource>
+		<resource name="notifications">Notifications</resource>
+		<resource name="no_notifications">No notifications. Go get busy in the community!</resource>
+		<resource name="notifications">Notifications</resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

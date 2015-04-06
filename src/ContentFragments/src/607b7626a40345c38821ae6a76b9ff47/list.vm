@@ -1,0 +1,11 @@
+#if (!$messages)
+	#set($messages = $core_v2_conversationMessage.List($conversationId, "%{PageSize=5,PageIndex=$pageIndex}"))
+#end
+#if ($pageIndex > 0)
+	#set($targetPageIndex = $pageIndex - 1)
+	<a href="#" data-pageindex="$targetPageIndex" class="view-more">$core_v2_language.GetResource('message_load_more')</a>
+#end
+#foreach($message in $messages)
+#each
+	$core_v2_widget.ExecuteFile('render-reply.vm')
+#end

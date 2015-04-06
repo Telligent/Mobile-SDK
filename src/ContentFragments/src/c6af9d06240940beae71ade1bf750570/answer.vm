@@ -1,0 +1,29 @@
+#set ($threadId = false)
+#set ($threadId = $core_v2_utility.ParseInt($core_v2_page.GetQueryStringValue('w_threadid')))
+
+#if (!$threadId)
+	$core_v2_widget.Hide()
+#end
+
+#set($answers = $core_v2_forumReply.List($threadId, "%{ForumReplyQueryType='verified-answers',SortBy='PostDate',SortOrder='Descending',PageSize=1,PageIndex=0,IncludeThreadStarter='False'}"))
+#foreach($answer in $answers)
+	<div class="content">
+		<p>$core_v2_language.Truncate($answer.Body('Web'), 250, '...')</p>
+	</div>
+	#if ($answers.TotalCount > 1)
+		#set($count = $answers.TotalCount - 1)
+		<div class="actions">
+			<ul>
+				<li>
+					<span class="detail">
+						#if ($count == 1)
+							$core_v2_language.FormatString($core_v2_language.GetResource('plus_more_answer'), $count)
+						#else
+							$core_v2_language.FormatString($core_v2_language.GetResource('plus_more_answers'), $count)
+						#end
+					</span>
+				</li>
+			</ul>
+		</div>
+	#end
+#end

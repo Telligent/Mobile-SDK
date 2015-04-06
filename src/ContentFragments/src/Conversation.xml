@@ -1,0 +1,95 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:Conversation_Name}" version="7.0.0.1" instanceIdentifier="607b7626a40345c38821ae6a76b9ff47" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="conversation">
+		<contentScript>
+		<![CDATA[
+#set($conversationId = false)
+#set($conversationId = $core_v2_utility.ParseGuid($mobile_v1_urlToken.Value('ConversationId')))
+#if (!$conversationId)
+	$core_v2_widget.Hide()
+#end
+
+#set($conversation = $core_v2_conversation.Get($conversationId))
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('conversations'))">$core_v2_language.GetResource('conversations')</a>
+		<h1>$conversation.FirstMessage.Subject</h1>
+	</div>
+	<div class="description">
+#foreach ($participant in $conversation.Participants)
+#beforeall
+$core_v2_language.GetResource('participants_before')
+#each
+<a href="$core_v2_encoding.HtmlAttributeEncode($participant.Url)">$participant.DisplayName</a>
+#between
+$core_v2_language.GetResource('participants_between')
+#afterall
+$core_v2_language.GetResource('participants_after')
+#end
+	</div>
+</div>
+
+<div class="post-list messages">
+	#set($pageIndex = 0)
+	#set($messages = $core_v2_conversationMessage.List($conversationId, "%{PageSize=5,PageIndex=$pageIndex}"))
+	#set($lastPageIndex = $messages.TotalCount / 5)
+	#if ($lastPageIndex * 5 >= $messages.TotalCount)
+		#set($lastPageIndex = $lastPageIndex - 1)
+	#end
+	#set($pageIndex = $lastPageIndex)
+	#if ($pageIndex >= 1)
+		#set($messages = false)
+	#end
+
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+<div class="reply-form">
+	<fieldset>
+		<div class="form-field">
+			<textarea placeholder="$core_v2_language.GetResource('reply_placeholder')"></textarea>
+		</div>
+	</fieldset>
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.conversation.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			replyUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('reply.vm'))',
+			conversationsUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('conversations'))',
+			conversationId: '$conversationId.ToString()',
+			deleteConfirmation: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('conversation_delete_confirmation'))',
+			replyText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('reply'))',
+			deleteText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('delete'))',
+			conversationNotificationTypeId: '$core_v2_conversationMessage.NotificationTypeId.ToString()',
+			conversationId: '$conversationId.ToString()',
+			getLatestUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('get-latest.vm'))'
+		});
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="Conversation_Name">Conversation</resource>
+		<resource name="conversations">Inbox</resource>
+		<resource name="delete">Delete</resource>
+		<resource name="conversation_delete_confirmation">Are you sure you want to delete this conversation?</resource>
+		<resource name="message_load_more">Load more messages...</resource>
+		<resource name="reply_placeholder">Reply...</resource>
+		<resource name="reply">Reply</resource>
+		<resource name="participants_before">with </resource>
+		<resource name="participants_between">, </resource>
+		<resource name="participants_after"></resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,16 @@
+
+$core_v2_page.SetContentType('application/json')
+
+#set($user = $core_v2_user.Accessing)
+#set($unreadNotificationCount = 0)
+#set($unreadConversationCount = 0)
+#if($core_v2_user.IsRegistered($user.Id))
+	#set ($options = "%{ PageIndex = $pageIndex, PageSize = $pageSize, IsRead='False' }")
+	#set ($conversationMessageNotificationFilterName = "_Filters_${core_v2_conversationMessage.NotificationTypeId}")
+	$options.Add($conversationMessageNotificationFilterName, 'Exclude')
+	#set($unreadNotificationCount = $core_v2_notification.List($options).TotalCount)
+
+	#set($unreadConversationCount = $core_v2_conversation.UnreadCount())
+#end
+
+{"UnreadNotificationCount":$unreadNotificationCount,"UnreadConversationCount":$unreadConversationCount}

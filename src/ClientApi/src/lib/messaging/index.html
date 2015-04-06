@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Messaging</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta "mobile-web-app-status-bar-style" content="black" />
+    <meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+<body>
+    <strong>Tests written to console...</strong>
+    <script src="../../jquery.min.js"></script>
+    <script src="../../define.js"></script>
+    <script src="../../testlog.js"></script>
+    <script src="../../test.js"></script>
+    <script src="../util/util.js"></script>
+    <script src="messaging.js"></script>
+
+    <script type="text/javascript">
+    require(['messaging'], function(messaging, $, global, undef) {
+
+        var fooSub1,
+            fooSub2,
+            barSub1,
+            fooCount = 0,
+            barCount = 0;
+
+        test("subscribing should return an id", function(){
+            fooSub1 = messaging.subscribe('foo', function(data) {
+                fooCount++;
+            });
+            return fooSub1 && fooSub1.length == 36;
+        });
+
+        test("publish should trigger subscribed handlers with passed data", function(){
+            var handledMessage;
+            fooSub2 = messaging.subscribe('foo', function(data) {
+                fooCount++;
+                handledMessage = data.message;
+            });
+            barSub1 = messaging.subscribe('bar', function(data) {
+                barCount++;
+            });
+
+            messaging.publish('foo', { message: 'hello!' });
+
+            return handledMessage == 'hello!' && fooCount == 2;
+        });
+
+        test("publish should not trigger handlers for other messages", function() {
+            messaging.publish('bar');
+
+            return fooCount == 2 && barCount ==1;
+        });
+
+        test("unsubscribe should remove subscribers", function(){
+            messaging.unsubscribe(barSub1);
+            messaging.unsubscribe(fooSub2);
+
+            messaging.publish('foo', { message: 'x' });
+            messaging.publish('bar', { message: 'y' });
+
+            return fooCount == 3 && barCount ==1;
+        });
+
+        test("clear of scope should usubscribe subscriptions for that explicit scope", function() {
+            messaging.subscribe('bar', 'scope1', function(){
+                barCount++;
+            });
+            messaging.subscribe('bar', 'scope1', function(){
+                barCount++;
+            });
+            messaging.subscribe('bar', 'scope2', function(){
+                barCount++;
+            });
+
+            messaging.clear('scope1');
+            messaging.publish('bar');
+
+            return barCount == 2;
+        });
+
+        test("clear of content scope should usubscribe subscriptions that had no explicit scope", function(){
+            messaging.clear('content');
+
+            messaging.publish('foo');
+
+            return fooCount ==3;
+        });
+
+    }, jQuery, window);
+    </script>
+</body>
+</html>

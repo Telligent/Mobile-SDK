@@ -1,0 +1,26 @@
+/* structure */
+#wrapper {
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    }
+#content {
+    overflow-y: auto;
+    position: relative;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+    }
+
+/* aesthetics */
+#content {
+    background-color: #ecf0f1;
+    }
+
+.sheet {
+    background-color: #EEE;
+    padding: 20px;
+    box-sizing: border-box;
+}

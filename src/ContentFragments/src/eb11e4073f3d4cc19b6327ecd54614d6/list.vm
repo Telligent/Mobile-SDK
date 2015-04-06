@@ -1,0 +1,49 @@
+#set($medias = $core_v2_media.List("%{GalleryId=$galleryId,GroupId=$group.Id,PageIndex=$pageIndex,PageSize=5,SortBy='PostDate',SortOrder='Descending'}"))
+#foreach($media in $medias)
+#each
+	<div class="post-list-item content-item media" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('media', $media.Id))">
+		<div class="post with-thumbnail">
+			<div class="thumbnail">
+				$!core_v2_ui.GetPreviewHtml($media.File.FileUrl, "%{Width=60,Height=60}")
+			</div>
+			<div class="details">
+				<div class="date">$core_v2_language.FormatAgoDate($media.Date)</div>
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('media', $media.Id))">$media.Title</a>
+			</div>
+			<div class="actions">
+				<ul>
+					## Like
+					#if ($accessingUserIsRegistered && $core_v2_like.CanLike($media.ContentId, $core_v2_media.ContentTypeId))
+						<li class="action-like">
+							#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+							$core_v2_ui.Like($media.ContentId, $core_v2_media.ContentTypeId, "%{ Format = $format }")
+						</li>
+					#end
+					<li>
+						<span class="detail threads">
+
+							## Comments
+							#if($media.CommentCount == 0)
+								No comments
+							#elseif($media.CommentCount ==1)
+								$media.CommentCount comment
+							#elseif($media.CommentCount > 1)
+								$media.CommentCount comments
+							#end
+						</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item medias"><div class="message norecords">$core_v2_language.GetResource('no_gallery')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($medias.TotalCount > (($medias.PageIndex + 1) * $medias.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

@@ -1,0 +1,116 @@
+﻿<scriptedContentFragments>
+<scriptedContentFragment name="${resource:GroupList_Name}" version="7.0.0.1" instanceIdentifier="60ac1bed4b9844b893a5c8d4497261c8" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="group-list" >
+	<contentScript>
+		<![CDATA[
+
+
+#set ($pageIndex = 0)
+#set ($pageSize = $core_v2_widget.GetIntValue('pageSize', 5))
+#set ($queryType = $core_v2_widget.GetStringValue('queryType','currentUser'))
+
+#if ($queryType == "subGroups")
+	#set ($parentGroupId = false)
+	#set ($parentGroupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+	#if (!$parentGroupId)
+		$core_v2_widget.Hide()
+	#end
+	#set ($parentGroup = false)
+	#set ($parentGroup = $core_v2_group.Get("%{Id=$parentGroupId}"))
+	#if (!$parentGroup)
+		$core_v2_widget.Hide()
+	#end
+
+	#set($bannerUrl = $parentGroup.Url)
+	#set($bannerText = $parentGroup.Name)
+	#set($bannerAvatarUrl = $parentGroup.AvatarUrl)
+	#set($headerText = $core_v2_language.GetResource('GroupList_Groups'))
+
+#elseif ($queryType == "currentUser")
+	#set ($userId = false)
+	#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+	#if (!$userId)
+		$core_v2_widget.Hide()
+	#end
+	#set ($user = false)
+	#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+	#if (!$user)
+		$core_v2_widget.Hide()
+	#end
+
+	#set($bannerUrl = $user.ProfileUrl)
+	#set($bannerText = $user.DisplayName)
+	#set($bannerAvatarUrl = $user.AvatarUrl)
+	#set($headerText = $core_v2_language.FormatString($core_v2_language.GetResource('GroupList_UserGroups'), $user.DisplayName))
+
+#elseif ($queryType == "accessingUser")
+	#set($user = $core_v2_user.Accessing)
+
+	#set($bannerUrl = $user.ProfileUrl)
+	#set($bannerText = $user.DisplayName)
+	#set($bannerAvatarUrl = $user.AvatarUrl)
+	#set($headerText = $core_v2_language.FormatString($core_v2_language.GetResource('GroupList_UserGroups'), $user.DisplayName))
+#else
+	$core_v2_widget.Hide()
+#end
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($bannerUrl)">$bannerText</a>
+		<h1>$headerText</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($bannerAvatarUrl, 40, 40, "%{ alt = $bannerText, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+
+<div class="post-list groups">
+	$core_v2_widget.ExecuteFile('list.vm')
+</div>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.groupList.register({
+		moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+		wrapper: '#$core_v2_widget.WrapperElementId',
+		pageSize: $pageSize
+		});
+	});
+})
+</script>
+		]]>
+	</contentScript>
+		<headerScript>
+		</headerScript>
+	<configuration>
+		<![CDATA[
+
+<propertyGroup id="options" resourceName="GroupList_Options">
+	<property id="queryType" resourceName="GroupList_QueryType" dataType="string" defaultValue="currentUser">
+		<propertyValue value="subGroups" resourceName="GroupList_QueryType_SubGroups" />
+		<propertyValue value="currentUser" resourceName="GroupList_QueryType_CurrentUser" />
+		<propertyValue value="accessingUser" resourceName="GroupList_QueryType_AccessingUser" />
+	</property>
+	<property id="pageSize" resourceName="GroupList_PageSize" dataType="int" defaultValue="5" />
+</propertyGroup>
+		]]>
+	</configuration>
+		<languageResources>
+<language key="en-us">
+	<resource name="GroupList_Name">Group List</resource>
+	<resource name="GroupList_Options">Options</resource>
+	<resource name="GroupList_QueryType">Show</resource>
+	<resource name="GroupList_QueryType_SubGroups">Current contextual group's sub-groups</resource>
+	<resource name="GroupList_QueryType_CurrentUser">Current contextual user's groups</resource>
+	<resource name="GroupList_QueryType_AccessingUser">Accessing user's groups</resource>
+	<resource name="GroupList_PageSize">Number of results to display</resource>
+	<resource name="GroupList_Groups">Groups</resource>
+	<resource name="GroupList_UserGroups">Groups</resource>
+	<resource name="GroupList_No_Groups">There were no groups to display.</resource>
+	<resource name="GroupList_No_Members">No members</resource>
+	<resource name="GroupList_Member">{0} member</resource>
+	<resource name="GroupList_Members">{0} members</resource>
+</language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

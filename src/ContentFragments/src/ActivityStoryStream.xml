@@ -1,0 +1,374 @@
+﻿<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:ActivityStoryStream_Name}" version="7.0.0.1" instanceIdentifier="cb7d40730a64458792894cec206da723" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="activity-story-stream">
+	<contentScript>
+<![CDATA[
+
+#set ($pageSize = $core_v2_widget.GetIntValue('pageSize', 7))
+#set ($endlessScroll = $core_v2_widget.GetBoolValue('endlessScroll', true))
+
+#set($filterType = false)
+#set($filterType = $core_v2_widget.GetStringValue('filterType', ''))
+
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+
+#set ($user = false)
+#if ($filterType == 'User')
+	#set ($userId = false)
+	#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+
+	#set ($user = false)
+	#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+
+	#if (!$user)
+		#set ($user = $core_v2_user.Accessing)
+	#end
+	## if contextual/accessing user is anonymous, fall back to site filter mode
+	#if (!$core_v2_user.IsRegistered($user.Id))
+		#set ($filterType = 'Site')
+	#else
+		<div class="banner condensed">
+			<div class="context">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">$user.DisplayName</a>
+				<h1>$!core_v2_language.FormatString($core_v2_language.GetResource('User_Activity'), $user.DisplayName)</h1>
+			</div>
+			<div class="avatar">$!core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 40, 40, "%{ alt = $user.DisplayName, ResizeMethod = 'ZoomAndCrop' }")</div>
+		</div>
+	#end
+#else
+	#set($user = $core_v2_user.Accessing)
+#end
+
+#set ($isAdministrator = false)
+#if ($core_v2_nodePermission.Get('Site_ModerateUserContent').IsAllowed)
+	#set($isAdministrator = true)
+#end
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set ($group = false)
+#set ($enablePosting = false)
+#if ($groupId > 0)
+	#set($group = $core_v2_group.Get("%{Id = $groupId}"))
+	#set ($enablePosting = $group.EnableGroupMessages)
+	#if ($group.GroupType == 'Joinless')
+		#set ($enablePosting = $enablePosting && $core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+	#else
+		#set ($groupUserMember = false)
+		#set ($groupUserMember = $core_v2_groupUserMember.Get($group.Id, "%{ UserId = $accessingUser.Id }"))
+		#set ($enablePosting = $enablePosting && $groupUserMember != false && ($groupUserMember.MembershipType == "Owner" || $groupUserMember.MembershipType == "Manager" || $groupUserMember.MembershipType == "Member"))
+	#end
+#else
+	#set($enablePosting = $core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+#end
+#set ($enablePosting = $enablePosting && $core_v2_activityStoryUserPreference.Get($core_v2_statusMessage.StoryTypeId).IsLoggingEnabled)
+
+## Hide the stream if private and not a member
+#set ($hasAcess = true)
+#if ($group)
+	#set ($member = $core_v2_groupUserMember.Get($group.Id, "%{ UserId = $accessingUser.Id }"))
+	#if (($group.GroupType == 'PrivateListed' || $group.GroupType == 'PrivateUnlisted') && !($member.IsRoleMember || $member.MembershipType == "Owner" || $member.MembershipType == "Manager" || $member.MembershipType == "Member"))
+		#set ($hasAcess = false)
+	#end
+#end
+
+#if ($hasAcess)
+
+	## ######################
+	## Determine Configured Filters
+	## ######################
+
+	#set ($filterName0 = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('filterName0',$core_v2_language.GetResource('filterNameDefault'))))
+	#set ($filterTypes0 = false)
+	#if($filterType == 'User')
+		#set ($filterTypes0 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterUserActivityTypes0','')))
+	#else
+		#set ($filterTypes0 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterActivityTypes0','')))
+	#end
+
+	#set ($filterName1 = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('filterName1',$core_v2_language.GetResource('filterNameDefault'))))
+	#set ($filterTypes1 = false)
+	#if($filterType == 'User')
+		#set ($filterTypes1 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterUserActivityTypes1','')))
+	#else
+		#set ($filterTypes1 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterActivityTypes1','')))
+	#end
+
+	#set ($filterName2 = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('filterName2',$core_v2_language.GetResource('filterNameDefault'))))
+	#set ($filterTypes2 = false)
+	#if($filterType == 'User')
+		#set ($filterTypes2 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterUserActivityTypes2','')))
+	#else
+		#set ($filterTypes2 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterActivityTypes2','')))
+	#end
+
+	#set ($filterName3 = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('filterName3',$core_v2_language.GetResource('filterNameDefault'))))
+	#set ($filterTypes3 = false)
+	#if($filterType == 'User')
+		#set ($filterTypes3 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterUserActivityTypes3','')))
+	#else
+		#set ($filterTypes3 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterActivityTypes3','')))
+	#end
+
+	#set ($filterName4 = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('filterName4',$core_v2_language.GetResource('filterNameDefault'))))
+	#set ($filterTypes4 = false)
+	#if($filterType == 'User')
+		#set ($filterTypes4 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterUserActivityTypes4','')))
+	#else
+		#set ($filterTypes4 = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue('filterActivityTypes4','')))
+	#end
+
+
+	## ######################
+	## Render Filters
+	## ######################
+
+	## get any querystring-sent parameters
+
+	## end date (endless scrolling)
+
+	#set ($endDate = false)
+	#if ($core_v2_page.GetQueryStringValue('w_endDate').length > 0)
+		#set($endDate = $core_v2_utility.ParseDate($core_v2_page.GetQueryStringValue('w_endDate')))
+	#end
+
+	## filter index
+
+	#set ($filterIndex = 0)
+	#set ($filterIndex = $core_v2_page.GetQueryStringValue('w_filterIndex'))
+
+	## only show filters if there's more than one defined
+	#set ($explicitFilters = 0)
+	#if ($filterTypes0.Values('filters').Count > 0)
+		#set ($explicitFilters = $explicitFilters + 1)
+	#end
+	#if ($filterTypes1.Values('filters').Count > 0)
+		#set ($explicitFilters = $explicitFilters + 1)
+	#end
+	#if ($filterTypes2.Values('filters').Count > 0)
+		#set ($explicitFilters = $explicitFilters + 1)
+	#end
+	#if ($filterTypes3.Values('filters').Count > 0)
+		#set ($explicitFilters = $explicitFilters + 1)
+	#end
+	#if ($filterTypes4.Values('filters').Count > 0)
+		#set ($explicitFilters = $explicitFilters + 1)
+	#end
+
+	#if ($explicitFilters > 1 && ($filterTypes0.Values('filters').Count > 0 || $filterTypes1.Values('filters').Count > 0 || $filterTypes2.Values('filters').Count > 0 || $filterTypes3.Values('filters').Count > 0 || $filterTypes4.Values('filters').Count > 0))
+		<div class="ui-links filters" data-minlinks="50" data-animate="true">
+			<ul class="activity-filters">
+				#if ($filterTypes0.Values('filters').Count > 0 && $filterName0.length > 0)
+					<li><a class="#if($filterIndex == 0)selected #end" href="#" data-filterindex="0" #if($filterIndex == 0)data-selected #end>$filterName0</a></li>
+				#end
+				#if ($filterTypes1.Values('filters').Count > 0 && $filterName1.length > 0)
+					<li><a class="#if($filterIndex == 1)selected #end" href="#" data-filterindex="1" #if($filterIndex == 1)data-selected #end>$filterName1</a></li>
+				#end
+				#if ($filterTypes2.Values('filters').Count > 0 && $filterName2.length > 0)
+					<li><a class="#if($filterIndex == 2)selected #end" href="#" data-filterindex="2" #if($filterIndex == 2)data-selected #end>$filterName2</a></li>
+				#end
+				#if ($filterTypes3.Values('filters').Count > 0 && $filterName3.length > 0)
+					<li><a class="#if($filterIndex == 3)selected #end" href="#" data-filterindex="3" #if($filterIndex == 3)data-selected #end>$filterName3</a></li>
+				#end
+				#if ($filterTypes4.Values('filters').Count > 0 && $filterName4.length > 0)
+					<li><a class="#if($filterIndex == 4)selected #end" href="#" data-filterindex="4" #if($filterIndex == 4)data-selected #end>$filterName4</a></li>
+				#end
+			</ul>
+		</div>
+	#end
+
+	## load and render stories
+	<div class="post-list stream">
+		$core_v2_widget.ExecuteFile("stream.vm")
+	</div>
+
+	## render client script inline since it's short and to avoid extra http requests
+	<script>$core_v2_widget.RenderFile('ui.js')</script>
+	<script>
+	jQuery(function(){
+		jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+			jQuery.telligent.evolution.widgets.activityStoryStream.register({
+				wrapper: '#$core_v2_widget.WrapperElementId',
+				currentFilterIndex: $filterIndex,
+				pageSize: $pageSize,
+				filterType: '$filterType',
+				groupId: $groupId,
+				moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+				postUrl: #if ($enablePosting) #if ($groupId > 0) '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('group-status-add', $groupId))' #else '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('status-add'))' #end #else null #end,
+				postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Post'))'
+			});
+		});
+	})
+	</script>
+
+#else
+	<div class="post topic full">
+		<div class="content">
+			$core_v2_language.GetResource('access_denied')
+		</div>
+	</div>
+#end
+
+]]>
+	</contentScript>
+	<headerScript>
+	</headerScript>
+	<configuration>
+	  <![CDATA[
+<propertyGroup id="options" resourceName="options">
+	<property id="fragmentHeader" resourceName="title" dataType="string" defaultValue="${resource:activityStoryStream_name}" />
+	<property id="pageSize" resourceName="pageSize" dataType="int" defaultValue="10" />
+	<property id="filterType" resourceName="filterType" descriptionResourceName="filterType_Desc" dataType="string" defaultValue="" >
+		<propertyValue value="Site" resourceName="filterType_site"
+			propertiesToHide="includeSubGroups,filterUserActivityTypes0,filterUserActivityTypes1,filterUserActivityTypes2,filterUserActivityTypes3,filterUserActivityTypes4"
+			propertiesToShow="activityTypes0,filterActivityTypes1,filterActivityTypes2,filterActivityTypes3,filterActivityTypes4" />
+		<propertyValue value="Group" resourceName="filterType_group"
+			propertiesToHide="filterUserActivityTypes0,filterUserActivityTypes1,filterUserActivityTypes2,filterUserActivityTypes3,filterUserActivityTypes4"
+			propertiesToShow="includeSubGroups,filterActivityTypes0,filterActivityTypes1,filterActivityTypes2,filterActivityTypes3,filterActivityTypes4" />
+		<propertyValue value="User" resourceName="filterType_userProfile"
+			propertiesToHide="includeSubGroups,filterActivityTypes0,filterActivityTypes1,filterActivityTypes2,filterActivityTypes3,activityTypes4"
+			propertiesToShow="filterUserActivityTypes0,filterUserActivityTypes1,filterUserActivityTypes2,filterUserActivityTypes3,filterUserActivityTypes4" />
+	</property>
+	<property id="includeSubGroups" resourceName="includeSubGroups" dataType="bool" defaultValue="false" />
+	<property id="endlessScroll" resourceName="endlessScroll" descriptionResourceName="endlessScrollDesc" dataType="bool" defaultValue="true" />
+</propertyGroup>
+<propertyGroup id="filter0" resourceName="filter0" descriptionResourceName="filter_desc">
+	<property id="filterName0" resourceName="filterName" descriptionResourceName="filterDesc" dataType="string"
+		defaultValue="${resource:filterNameDefault}" />
+	<property id="filterActivityTypes0" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom"
+		defaultValue="filters=948477cb045b40778bf17ce1a091db11&amp;filters=44a697e2d1b348f6951945cfa2bfc4fd&amp;filters=0f7404b7d8f24a1b97c9175af1be4570&amp;filters=06336ce1600c40e4b32d97ff811ad7bd&amp;filters=acf00be657174a25a17de2036c694444&amp;filters=0a680cf3f19648c592dbdf8cebe3fe92&amp;filters=ecf7e9ef76f0447c9b252a531c7bb651&amp;filters=edebd6ada45a470f89e63dfc31714bd6&amp;filters=a23334fb669a421d85e91945a7b80581&amp;filters=14656a259a034311b8e346cef57ac02b&amp;filters=333cc77c019644c5aefa6e35a0011ee8&amp;filters=276a9e5128394ae98291e3f24b49cbc4&amp;filters=e9dd0cb7adf74518b0961b00f3f51246&amp;filters=3d10e9df357b42038f7d3bf15f60fd61&amp;filters=cf26068cf6644050bf69f1d5c3e7eb1a&amp;filters=432f675c15bb429c98a99e99d539587b&amp;948477cb045b40778bf17ce1a091db11=All&amp;44a697e2d1b348f6951945cfa2bfc4fd=All&amp;0f7404b7d8f24a1b97c9175af1be4570=All&amp;06336ce1600c40e4b32d97ff811ad7bd=All&amp;acf00be657174a25a17de2036c694444=All&amp;0a680cf3f19648c592dbdf8cebe3fe92=All&amp;ecf7e9ef76f0447c9b252a531c7bb651=All&amp;edebd6ada45a470f89e63dfc31714bd6=All&amp;a23334fb669a421d85e91945a7b80581=All&amp;14656a259a034311b8e346cef57ac02b=All&amp;333cc77c019644c5aefa6e35a0011ee8=All&amp;276a9e5128394ae98291e3f24b49cbc4=All&amp;e9dd0cb7adf74518b0961b00f3f51246=All&amp;3d10e9df357b42038f7d3bf15f60fd61=All&amp;cf26068cf6644050bf69f1d5c3e7eb1a=All&amp;432f675c15bb429c98a99e99d539587b=All">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_User" />
+		<propertyValue value="Followed" resourceName="activityTypeUsers_Followed" />
+		<propertyValue value="User,Followed" resourceName="activityTypeUsers_UserAndFollowed" />
+		<propertyValue value="All" resourceName="activityTypeUsers_All" />
+	</property>
+	<property id="filterUserActivityTypes0" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom" >
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_Include" />
+	</property>
+</propertyGroup>
+<propertyGroup id="filter1" resourceName="filter1" descriptionResourceName="filter_desc">
+	<property id="filterName1" resourceName="filterName" descriptionResourceName="filterDesc" dataType="string"
+		defaultValue="${resource:filterNameDefault}" />
+	<property id="filterActivityTypes1" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_User" />
+		<propertyValue value="Followed" resourceName="activityTypeUsers_Followed" />
+		<propertyValue value="User,Followed" resourceName="activityTypeUsers_UserAndFollowed" />
+		<propertyValue value="All" resourceName="activityTypeUsers_All" />
+	</property>
+	<property id="filterUserActivityTypes1" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_Include" />
+	</property>
+</propertyGroup>
+<propertyGroup id="filter2" resourceName="filter2" descriptionResourceName="filter_desc">
+	<property id="filterName2" resourceName="filterName" descriptionResourceName="filterDesc" dataType="string"
+		defaultValue="${resource:filterNameDefault}" />
+	<property id="filterActivityTypes2" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom" >
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_User" />
+		<propertyValue value="Followed" resourceName="activityTypeUsers_Followed" />
+		<propertyValue value="User,Followed" resourceName="activityTypeUsers_UserAndFollowed" />
+		<propertyValue value="All" resourceName="activityTypeUsers_All" />
+	</property>
+	<property id="filterUserActivityTypes2" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_Include" />
+	</property>
+</propertyGroup>
+<propertyGroup id="filter3" resourceName="filter3" descriptionResourceName="filter_desc">
+	<property id="filterName3" resourceName="filterName" descriptionResourceName="filterDesc" dataType="string"
+		defaultValue="${resource:filterNameDefault}" />
+	<property id="filterActivityTypes3" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_User" />
+		<propertyValue value="Followed" resourceName="activityTypeUsers_Followed" />
+		<propertyValue value="User,Followed" resourceName="activityTypeUsers_UserAndFollowed" />
+		<propertyValue value="All" resourceName="activityTypeUsers_All" />
+	</property>
+	<property id="filterUserActivityTypes3" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_Include" />
+	</property>
+</propertyGroup>
+<propertyGroup id="filter4" resourceName="filter4" descriptionResourceName="filter_desc">
+	<property id="filterName4" resourceName="filterName" descriptionResourceName="filterDesc" dataType="string"
+		defaultValue="${resource:filterNameDefault}" />
+	<property id="filterActivityTypes4" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_User" />
+		<propertyValue value="Followed" resourceName="activityTypeUsers_Followed" />
+		<propertyValue value="User,Followed" resourceName="activityTypeUsers_UserAndFollowed" />
+		<propertyValue value="All" resourceName="activityTypeUsers_All" />
+	</property>
+	<property id="filterUserActivityTypes4" resourceName="activityTypes" descriptionResourceName="activityTypesDesc" dataType="custom">
+		<propertyValue value="" resourceName="activityTypeUsers_Exclude" />
+		<propertyValue value="User" resourceName="activityTypeUsers_Include" />
+	</property>
+</propertyGroup>
+
+	]]>
+	</configuration>
+	<languageResources>
+	  <language key="en-us">
+		<resource name="ActivityStoryStream_Name">Activity Story Stream</resource>
+		<resource name="options">Options</resource>
+		<resource name="pageSize">Number of Items to Display</resource>
+		<resource name="filterType">Activity Stream Mode</resource>
+		<resource name="filterType_site">Site (all site activity)</resource>
+		<resource name="filterType_group">Group (activity in a group and optionally subgroups)</resource>
+		<resource name="filterType_userProfile">User (activity for contextual user)</resource>
+		<resource name="filterType_Desc">Determines the default view of the Activity Stream and the set of filters to display</resource>
+		<resource name="includeSubGroups">Include subgroup activity</resource>
+		<resource name="endlessScroll">Endless Stream</resource>
+		<resource name="endlessScrollDesc">Automatically load more stories when scrolled near the end</resource>
+		<resource name="loading">Loading...</resource>
+		<resource name="showMore">Show More</resource>
+		<resource name="hideOriginalPost">Hide original post</resource>
+		<resource name="showOriginalPost">Show original post</resource>
+		<resource name="hideHistory">Hide revision history</resource>
+		<resource name="showHistory">Show revision history</resource>
+		<resource name="deleteActivityMessage">Are you sure you want to delete this story?</resource>
+		<resource name="deleteCommentMessage">Are you sure you want to delete this comment?</resource>
+		<resource name="delete">Delete</resource>
+		<resource name="message">Send a Private Message</resource>
+		<resource name="comment">Comment</resource>
+		<resource name="comment_format">{0} comment</resource>
+		<resource name="comments_format">{0} comments</resource>
+		<resource name="comments">Comments</resource>
+		<resource name="writeComment">Write a comment...</resource>
+		<resource name="filterName">Filter Name</resource>
+		<resource name="filterDesc">Determines the display name of the filter</resource>
+		<resource name="filterNameDefault">Filter</resource>
+		<resource name="filter0">Filter 1</resource>
+		<resource name="filter1">Filter 2</resource>
+		<resource name="filter2">Filter 3</resource>
+		<resource name="filter3">Filter 4</resource>
+		<resource name="filter4">Filter 5</resource>
+		<resource name="filter_desc">Configures an optional filter</resource>
+		<resource name="activityTypes">Activity Story Types</resource>
+		<resource name="activityTypesDesc">Determines which activities from which users are included in this filter. If no types are selected, the filter will not be displayed.</resource>
+		<resource name="activityTypeUsers_Exclude">Exclude activity</resource>
+		<resource name="activityTypeUsers_Include">Include contextual user's activity</resource>
+		<resource name="activityTypeUsers_User">Include accessing user's activity</resource>
+		<resource name="activityTypeUsers_Followed">Include accessing user's followed users' activity</resource>
+		<resource name="activityTypeUsers_UserAndFollowed">Include accessing user's and followed users' activity</resource>
+		<resource name="activityTypeUsers_All">Include all users' activity</resource>
+		<resource name="today">Today</resource>
+		<resource name="View">View</resource>
+		<resource name="no_messages">There was no activity to display.</resource>
+		<resource name="view_more_comments">View more comments</resource>
+		<resource name="CF_Comment_ModeratedMessaage">Thank you, your comment requires moderation so it may take a while to appear.</resource>
+		<resource name="Cancel">Cancel</resource>
+		<resource name="User_Activity">Activity</resource>
+		<resource name="Post">Post</resource>
+		<resource name="access_denied">You must be a member to view this group's activity.</resource>
+	  </language>
+	</languageResources>
+  </scriptedContentFragment>
+</scriptedContentFragments>

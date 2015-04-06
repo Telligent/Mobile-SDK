@@ -1,0 +1,42 @@
+#set($blogs = false)
+#set($blogs = $core_v2_blog.List("%{GroupId=$groupId,IncludeSubGroups=$showSubGroups,PageIndex=$pageIndex,PageSize=$pageSize}"))
+
+#foreach($blog in $blogs)
+#each
+
+	<div class="post-list-item content-item blog" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($blog.Url)">
+		<div class="post without-avatar">
+			<div class="details">
+				<div class="date">#if($blog.PostCount > 0)${core_v2_language.FormatAgoDate($blog.LatestPostDate)}#else${core_v2_language.GetResource('NA')}#end
+				</div>
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($blog.Url)">$blog.Name</a>
+			</div>
+			<div class="actions">
+				<ul>
+					<li>
+						<div class="detail blogposts">
+							#if ($blog.PostCount == 0)
+								$core_v2_language.GetResource('no_posts')
+							#elseif ($blog.PostCount == 1)
+								$core_v2_language.FormatString($core_v2_language.GetResource('post_count'), $core_v2_language.FormatNumber($blog.PostCount))
+							#else
+								$core_v2_language.FormatString($core_v2_language.GetResource('posts_count'), $core_v2_language.FormatNumber($blog.PostCount))
+							#end
+						</div>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+#nodata
+	<div id="${core_v2_widget.WrapperElementId}_message_norecords"><div class="message norecords">$core_v2_language.GetResource('no_blogs')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($blogs.TotalCount > (($blogs.PageIndex + 1) * $blogs.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

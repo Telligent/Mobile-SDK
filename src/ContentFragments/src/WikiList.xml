@@ -1,0 +1,55 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:WikiList_Name}" version="7.0.0.1" instanceIdentifier="a98046dcf707414f83425eabe5b3c393" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="group-wikis">
+		<contentScript>
+		<![CDATA[
+#set($groupId = false)
+#set($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#if (!$groupId)
+	$core_v2_widget.Hide()
+#end
+
+#set($group = $core_v2_group.Get("%{Id=$groupId}"))
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+		<h1>$core_v2_language.GetResource('wikis')</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 40, 40, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+## load and render wikis
+<div class="post-list wikis">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.wikiList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))'
+		});
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="WikiList_Name">Wiki List</resource>
+		<resource name="wikis">Wikis</resource>
+		<resource name="no_wikis">No Wikis</resource>
+		<resource name="edit">Edit</resource>
+		<resource name="delete">Delete</resource>
+		<resource name="Cancel">Cancel</resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

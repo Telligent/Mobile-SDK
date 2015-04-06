@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Storage</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+<body>
+	<strong>Tests written to console...</strong>
+	<script src="../../jquery.min.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+	<script src="../../test.js"></script>
+	<script src="storage.js"></script>
+
+	<script type="text/javascript">
+	require(['storage'], function(storage, $, global, undef) {
+
+		test('Set stores an item', function(){
+			storage.set('abc', { foo: 'bar' });
+			var obj = storage.get('abc');
+			return obj.foo == 'bar';
+		});
+
+		test('Get gets an item', function(){
+			storage.set('abc', { foo: 'baz' });
+			var obj = storage.get('abc');
+			return obj.foo == 'baz';
+		})
+
+		test('Del deletes an item', function(){
+			storage.del('abc');
+			obj = storage.get('abc');
+			return obj == null;
+		});
+
+	}, jQuery, window);
+	</script>
+</body>
+</html>

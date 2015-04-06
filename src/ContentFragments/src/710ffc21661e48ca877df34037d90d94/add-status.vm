@@ -1,0 +1,32 @@
+$core_v2_page.SetContentType('application/json')
+
+#if ($core_v2_page.IsPost)
+	#set($groupId = $core_v2_utility.ParseInt($core_v2_page.GetFormValue('groupId')))
+	#set($messageBody = $core_v2_page.GetFormValue('message'))
+	#set($group = false)
+	#set($group = $core_v2_group.Get("%{ Id = '${groupId}'}"))
+	#set($fileName = false)
+	#set($fileName = $core_v2_page.GetFormValue('fileName'))
+	#set($contextId = false)
+	#set($contextId = $core_v2_page.GetFormValue('contextId'))
+	#set($options = "%{}")
+
+	#if ($fileName && $fileName.length > 0 && $contextId)
+		#set ($attachedFile = $core_v2_uploadedFile.Get($contextId, $fileName))
+		#if ($attachedFile)
+			$options.Add('AttachedUrl', $attachedFile.Url)
+		#end
+	#end
+
+	#if ($group && $group.ParentGroupId != -1)
+		$options.Add('GroupId', $group.Id)
+	#end
+
+	#set ($message = $core_v2_statusMessage.Create($messageBody, $options))
+	#if ($message.Errors.Count > 0)
+		$core_v2_page.SendJsonError($message.Errors)
+	#else
+		$core_v2_page.SetContentType('application/json')
+		{"success": "true"}
+	#end
+#end

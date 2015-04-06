@@ -1,0 +1,9 @@
+##
+## Ajax callback for loading more blogs
+##
+#set ($pageIndex = $core_v2_utility.ParseInt($core_v2_page.GetQueryStringValue('PageIndex')))
+#set ($pageSize = $core_v2_utility.ParseInt($core_v2_page.GetQueryStringValue('PageSize')))
+#set ($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#set ($showSubGroups = $core_v2_utility.ParseBool($core_v2_page.GetQueryStringValue('ShowSubGroups')))
+
+$core_v2_widget.ExecuteFile('list.vm')

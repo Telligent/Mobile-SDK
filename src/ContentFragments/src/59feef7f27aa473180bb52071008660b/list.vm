@@ -1,0 +1,39 @@
+#set($forums = $core_v2_forum.List("%{GroupId=$groupId,PageIndex=$pageIndex,PageSize=20,SortBy='LastPost',SortOrder='Descending'}"))
+#foreach($forum in $forums)
+#each
+	<div class="post-list-item content-item forum" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($forum.Url)">
+		<div class="post without-avatar">
+			<div class="details">
+				#if ($forum.LatestPostDate)
+					<div class="date">$core_v2_language.FormatAgoDate($forum.LatestPostDate)</div>
+				#end
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($forum.Url)">$forum.Name</a>
+			</div>
+			<div class="actions">
+				<ul>
+					<li>
+						<span class="detail threads">
+							#if ($forum.ThreadCount == 0)
+								$core_v2_language.GetResource('no_threads')
+							#elseif ($forum.ThreadCount == 1)
+								$core_v2_language.FormatString($core_v2_language.GetResource('thread_count'), $core_v2_language.FormatNumber($forum.ThreadCount))
+							#else
+								$core_v2_language.FormatString($core_v2_language.GetResource('threads_count'), $core_v2_language.FormatNumber($forum.ThreadCount))
+							#end
+						</span>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item forum"><div class="message norecords">$core_v2_language.GetResource('no_forums')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($forums.TotalCount > (($forums.PageIndex + 1) * $forums.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

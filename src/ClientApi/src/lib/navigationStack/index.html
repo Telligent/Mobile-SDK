@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Storage</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+<body>
+	<strong>Tests written to console...</strong>
+	<script src="../../jquery.min.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+	<script src="../../test.js"></script>
+	<script src="../util/util.js"></script>
+	<script src="navigationStack.js"></script>
+
+	<script type="text/javascript">
+	// mock storage
+	var _storage = {};
+	define('storage', function(){
+		return {
+			set: function(key, obj) {
+				_storage[key] = obj;
+			},
+			get: function(key) {
+				return _storage[key];
+			},
+			del: function(key) {
+				delete _storage[key];
+			},
+			debug: function() {
+				return _storage;
+			},
+			reset: function() {
+				_storage = {};
+			}
+		};
+	});
+
+	// mock environment module
+	var env = {
+		_online: true,
+		type: 'browser',
+		device: 'unknown',
+		isOnline: function() {
+			return this._online;
+		}
+	};
+	define('environment', function() {
+		return env;
+	});
+
+	require(['navigationStack', 'storage', 'environment'], function(NavigationStack, storage, environment, $, global, undef) {
+
+		// set up a stack
+		var stack = new NavigationStack({ maxDepth: 3 });
+
+		test('Push pushes content to storage', function(){
+			stack.push('/a', 'a content');
+			var item = storage.debug()['_navigation_stack'][0];
+			var itemContent = storage.debug()['_navigation_stack_content_' + item.id];
+			return item.url == '/a' && itemContent == 'a content';
+		});
+
+		test('CanMoveBack returns false when there are no previous pages', function(){
+			var canMoveBack = stack.canMoveBack();
+			return !canMoveBack;
+		});
+
+		test('Push pushes content to storage when other items present', function(){
+			stack.push('/b', 'b content');
+			var item = storage.debug()['_navigation_stack'][0];
+			var itemContent = storage.debug()['_navigation_stack_content_' + item.id];
+			return storage.debug()['_navigation_stack'].length == 2 &&
+				item.url == '/b' &&
+				itemContent == 'b content';
+		});
+
+		test('Replace replaces content at current index', function(){
+			stack.replaceCurrent('/b2', 'b content 2');
+			var item = storage.debug()['_navigation_stack'][0];
+			var itemContent = storage.debug()['_navigation_stack_content_' + item.id];
+			return storage.debug()['_navigation_stack'].length == 2 &&
+				item.url == '/b2' &&
+				itemContent == 'b content 2';
+		});
+
+		test('Get current returns current item', function(){
+			var current = stack.getCurrent();
+			return current.url == '/b2' &&
+				current.getContent() == 'b content 2';
+		});
+
+		test('CanMoveBack returns true when there are previous pages', function(){
+			var canMoveBack = stack.canMoveBack();
+			return canMoveBack;
+		});
+
+		test('CanMoveBack returns true when there are previous pages that match the URL', function(){
+			var canMoveBack = stack.canMoveBack('/b2');
+			return canMoveBack;
+		});
+
+		test('CanMoveBack returns false when there are no previous pages that match the URL', function(){
+			var canMoveBack = stack.canMoveBack('/b3');
+			return !canMoveBack;
+		});
+
+		test('peekBack returns previous item and does not move index', function(){
+			var prev = stack.peekBack();
+			var current = stack.getCurrent();
+			return current.url != prev.url &&
+				current.getContent() != prev.getContent() &&
+				prev.url == '/a';
+		})
+
+		test('Moveback gets previous item and moves index', function(){
+			var prev = stack.moveBack();
+			var current = stack.getCurrent();
+			return current.url == prev.url &&
+				current.getContent() == prev.getContent() &&
+				prev.url == '/a';
+		});
+
+		test('Moveback does not move back when there are no further', function(){
+			var prev = stack.moveBack();
+			return prev == null;
+		});
+
+		test('Peek backward to a specific url does just that but does not affect the stack', function(){
+			stack.push('/d', 'd content');
+			stack.push('/e', 'e content');
+			var prev = stack.peekBack('/a');
+			var current = stack.getCurrent();
+			var passed = (current.url != prev.url &&
+							current.getContent() != prev.getContent() &&
+							prev.url == '/a' &&
+							storage.debug()['_navigation_stack'].length == 3);
+			// clean up newly added pages
+			stack.moveBack('/a');
+			return passed;
+		});
+
+		test('Move backward to a specific url does just that and empties "forward" stack', function(){
+			stack.push('/d', 'd content');
+			stack.push('/e', 'e content');
+			var prev = stack.moveBack('/a');
+			var current = stack.getCurrent();
+			return current.url == prev.url &&
+				current.getContent() == prev.getContent() &&
+				prev.url == '/a' &&
+				storage.debug()['_navigation_stack'].length == 1;
+		});
+
+		test('Empty removes all data', function(){
+			stack.empty();
+			var data = storage.debug();
+			return !data['_navigation_stack'] && !data['_navigation_stack_index'];
+		});
+
+		test('Push removes items that are over the max', function() {
+			var stack2 = new NavigationStack({ maxDepth: 2 });
+			stack2.push('a', '1');
+			stack2.push('b', '2');
+			stack2.push('c', '3');
+			var dbg = storage.debug()['_navigation_stack'];
+			var result = dbg.length == 2 &&
+				dbg[0].url == 'c' &&
+				dbg[1].url == 'b';
+
+			storage.reset();
+			stack.push('/a', 'a content');
+			stack.push('/b', 'b content');
+
+			return result;
+		});
+
+		test('Clear removes explicit urls content', function(){
+			var initialAContent = storage.debug()['_navigation_stack_content_' + storage.debug()['_navigation_stack'][1].id];
+			stack.clearContent('/a');
+			var afterClearAContent = storage.debug()['_navigation_stack_content_' + storage.debug()['_navigation_stack'][1].id];
+			return (initialAContent != afterClearAContent &&
+							initialAContent.length > 0 &&
+							!afterClearAContent);
+		});
+
+		test('Clear removes implicit current url content', function(){
+			var current = stack.getCurrent();
+			var currentContent = current.getContent();
+			stack.clearContent();
+			var contentAfterClearingCurrent = current.getContent();
+			return (currentContent != contentAfterClearingCurrent &&
+							 currentContent.length > 0 &&
+							 !contentAfterClearingCurrent);
+		});
+
+		test('Exclude marks current head as excluded and persists', function(){
+			stack.push('/x');
+			stack.push('/y');
+			stack.push('/z');
+			stack.exclude();
+			var current = stack.getCurrent();
+			return current.exclude && storage.debug()['_navigation_stack'][0].exclude;
+		});
+
+		test('canMoveBack returns first non-excluded previous URL when no toUrl provided', function(){
+			// /z was excluded, so back should bring us to /y
+			stack.push('/yy');
+			var toUrl = stack.canMoveBack();
+			return toUrl == '/y';
+		});
+
+		test('CanMoveBack returns true when there are previous non-excluded pages that match the URL', function(){
+			stack.push('/za');
+			stack.push('/zb');
+			var toUrl = stack.canMoveBack('/yy');
+			return toUrl == '/yy';
+		});
+
+		test('CanMoveBack returns false when there are no previous non-excluded pages that match the URL', function(){
+			stack.exclude(); // exclude /zb
+			stack.push('/zc');
+			var canMoveBack = stack.canMoveBack('/zb');
+			return !canMoveBack;
+		});
+
+		test('page.GetContent() is null when online and expired', function(){
+			stack.push('/x1', 'c1');
+			env._online = true;
+			var current = stack.getCurrent();
+			current.expiration = (new Date().getTime() - 100);
+			return current.getContent() == null;
+		});
+
+		test('page.GetContent() is not null when offline and expired', function(){
+			stack.push('/x2', 'c2');
+			env._online = false;
+			var current = stack.getCurrent();
+			current.expiration = (new Date().getTime() - 100);
+			return current.getContent() == 'c2';
+		});
+
+		test('page.GetContent() is not null when online and not expired', function(){
+			stack.push('/x3', 'c3');
+			env._online = true;
+			var current = stack.getCurrent();
+			current.expiration = (new Date().getTime() + 100);
+			return current.getContent() == 'c3';
+		});
+
+		test('page.GetContent() is not null when offline and not expired', function(){
+			stack.push('/x4', 'c4');
+			env._online = true;
+			var current = stack.getCurrent();
+			current.expiration = (new Date().getTime() + 100);
+			return current.getContent() == 'c4';
+		});
+
+		test('expireAll() clears content of all expired pages when online', function() {
+			// create 3 pages, and force each to be expired
+			env._online = true;
+
+			stack.push('/x5', 'c5');
+			stack.setExpiration(new Date(new Date().getTime() - 100));
+
+			stack.push('/x6', 'c6');
+			stack.setExpiration(new Date(new Date().getTime() - 100));
+
+			stack.push('/x7', 'c7');
+			stack.setExpiration(new Date(new Date().getTime() - 100));
+
+			stack.expireAll();
+
+			var storageKeys = Object.keys(storage.debug());
+			return storageKeys.length === 1 && storageKeys[0] == '_navigation_stack';
+		})
+
+		test('expireAll() does not clear content of all expired pages when offline', function() {
+			// create 3 pages, and force each to be expired
+			env._online = false;
+
+			stack.push('/x8', 'c8');
+			stack.setExpiration(new Date(new Date().getTime() - 100));
+
+			stack.push('/x9', 'c9');
+			stack.setExpiration(new Date(new Date().getTime() - 100));
+
+			stack.push('/x10', 'c10');
+			stack.setExpiration(new Date(new Date().getTime() - 100));
+
+			stack.expireAll();
+
+			var storageKeys = Object.keys(storage.debug());
+			return storageKeys.length === 4 && storageKeys[0] == '_navigation_stack';
+		})
+
+
+	}, jQuery, window);
+	</script>
+</body>
+</html>

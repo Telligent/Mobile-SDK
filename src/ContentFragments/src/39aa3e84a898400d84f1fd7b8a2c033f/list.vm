@@ -1,0 +1,46 @@
+#set ($options = "%{ PageIndex = $pageIndex, PageSize = 7 }")
+$options.Add("_Filters_${core_v2_conversationMessage.NotificationTypeId}", 'Exclude')
+#set($notifications = $core_v2_notification.List($options))
+#foreach($notification in $notifications)
+#each
+	#set ($lastActor = false)
+	#set ($actors = $notification.Actors)
+	#set ($lastIndex = $actors.Count - 1)
+	#set ($lastActor = $actors.get_item($lastIndex).User)
+	#set ($notificationType = $core_v2_notificationType.Get($notification.NotificationTypeId))
+
+	#if ($notificationType.NotificationTypeId == $core_v2_ratedItem.NotificationTypeId)
+		#set ($lastActor = false)
+	#end
+
+	<div class="post-list-item content-item notification#if(!$notification.IsRead) unread#end"
+		data-notificationid="$notification.NotificationId"
+		data-notificationtypeid="$notification.NotificationTypeId"
+		data-targeturl="$core_v2_encoding.HtmlAttributeEncode($notification.TargetUrl)">
+		<div class="post">
+			#if ($lastActor)
+				<div class="avatar">
+					#if ($lastActor.ProfileUrl)
+						<a href="$core_v2_encoding.HtmlAttributeEncode($lastActor.ProfileUrl)" class="internal-link view-user-profile">
+							$core_v2_ui.GetResizedImageHtml($lastActor.AvatarUrl, 40, 40, "%{border='0', alt=$lastActor.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+						</a>
+					#else
+						$core_v2_ui.GetResizedImageHtml($lastActor.AvatarUrl, 40, 40, "%{border='0', alt=$lastActor.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+					#end
+				</div>
+			#end
+			<div class="date">$core_v2_language.FormatAgoDate($notification.LastUpdatedDate)</div>
+			<div class="content">
+				$notification.Message('Html')
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item notification"><div class="message norecords">$core_v2_language.GetResource('no_notifications')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($notifications.TotalCount > (($notifications.PageIndex + 1) * $notifications.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

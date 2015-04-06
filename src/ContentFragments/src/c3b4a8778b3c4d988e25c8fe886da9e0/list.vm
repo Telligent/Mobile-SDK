@@ -1,0 +1,49 @@
+#set ($contentTypes = '')
+#if ($filter == 'content')
+	#set ($contentTypes = "$core_v2_forumThread.ContentTypeId,$core_v2_wikiPage.ContentTypeId,$core_v2_blogPost.ContentTypeId,$core_v2_media.ContentTypeId")
+#elseif ($filter == 'applications')
+	#set ($contentTypes = "$core_v2_forum.ApplicationTypeId,$core_v2_wiki.ApplicationTypeId,$core_v2_blog.ApplicationTypeId,$core_v2_gallery.ApplicationTypeId")
+#elseif ($filter == 'groups')
+	#set ($contentTypes = "$core_v2_group.ContainerTypeId")
+#elseif ($filter == 'people')
+	#set ($contentTypes = "$core_v2_user.ContentTypeId")
+#end
+
+#set ($bookmarks = $core_v2_bookmark.List("%{ UserId = $userId, PageSize = $pageSize, PageIndex = $pageIndex, ContentTypeIds = $contentTypes}"))
+
+#foreach ($bookmark in $bookmarks)
+#each
+	#set($avatarUrl = false)
+	#if($bookmark.Content)
+		#set($avatarUrl = $bookmark.Content.AvatarUrl)
+		#if (!$avatarUrl)
+			#set($avatarUrl = $bookmark.Content.Application.AvatarUrl)
+			#if (!$avatarUrl)
+				#set($avatarUrl = $bookmark.Content.Application.Container.AvatarUrl)
+			#end
+		#end
+	#end
+
+	<div class="post-list-item content-item bookmark" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($bookmark.Content.Url)">
+		<div class="post">
+			<div class="avatar">
+				#if($avatarUrl)
+					<a href="$core_v2_encoding.HtmlAttributeEncode($bookmark.Content.Url)" class="internal-link view-user-profile">
+						$core_v2_ui.GetResizedImageHtml($avatarUrl, 40, 40, "%{border='0', alt=$alt, ResizeMethod='ZoomAndCrop',border='0'}")
+					</a>
+				#end
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($bookmark.Content.Url)">$bookmark.Content.HtmlName("Web")</a>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item bookmarks"><div class="message norecords">$core_v2_language.FormatString($core_v2_language.GetResource('Core_UserBookmarks_No_Bookmarks'), $user.DisplayName)</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($bookmarks.TotalCount > (($bookmarks.PageIndex + 1) * $bookmarks.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

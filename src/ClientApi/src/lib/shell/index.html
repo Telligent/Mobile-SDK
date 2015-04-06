@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Shell</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+
+	<link rel="stylesheet" type="text/css" href="../../normalize.css" />
+	<link rel="stylesheet" type="text/css" href="screen.css" />
+
+	<style>
+	#wrapper {
+		width: 100%;
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		right: 0px;
+		bottom: 0px;
+		}
+	#container {
+		overflow-y: auto;
+		position: relative;
+		height: 100%;
+		-webkit-overflow-scrolling: touch;
+		}
+	</style>
+<body>
+
+	<div id="viewport" class="">
+		<div id="debug" class="fixed"></div>
+		<div id="gutter-wrapper">
+			<div id="gutter" style="width: 100%;">
+				<div id="gutter-content-wrapper">
+					<div id="gutter-content">
+						gutter content
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="content-wrapper">
+			<div id="header" class="fixed">
+				<span>Headers</span>
+			</div>
+			<div id="content">
+				<div id="refresh-indicator">
+					Pull to Refresh
+				</div>
+				<div id="refreshable-content">
+					<div class="slideable">
+						<h4>Shell Test</h4>
+						<ul>
+							<li><a href="#" id="left">Slide Left</a></li>
+							<li><a href="#" id="right">Slide Right</a></li>
+							<li><a href="#" id="dissolve">Dissolve</a></li>
+							<!--
+							<li><a href="#" id="replace">Replace</a></li>
+							<li><a href="#" id="auto">Automated Movements</a></li>
+							<li><a href="#" id="message">Show Message</a></li>
+							<li><a href="#" id="debugger">Show Debug</a></li>
+							<li><a href="#" id="actions">Show Action Sheet</a></li>
+							<li><a href="#" id="loading">Show Loading Indicator</a></li>
+							<li><a href="#" id="form">Show Inputs</a></li>
+							-->
+						</ul>
+						<!--
+						<p>Fusce lacinia odio et felis congue eleifend. Phasellus at est orci, eu dapibus massa. Nam id magna porta risus</p>
+						<p>facilisis pretium non non augue. Integer sed felis non mi blandit posuere. Pellentesque habitant morbi tristique senectus et netus</p>
+						<p>et malesuada fames ac turpis egestas. Maecenas sit amet elit eget leo interdum congue sit amet et ipsum. Curabitur fringilla, tortor </p>
+						<p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+						<p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+						<p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+						<p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+						<p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+						<p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+						<p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+						<p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+						<p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+						<p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+						<p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+						<p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+						<p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+						<p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+						-->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="../../jquery.min.js"></script>
+	<script src="../../scroll.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+    <script src="../../telligent.evolution.js"></script>
+	<script src="../scrollfix/scrollfix.js"></script>
+	<script src="../refresh/refresh.js"></script>
+	<script src="../util/util.js"></script>
+	<script src="../messaging/messaging.js"></script>
+	<script src="../sheet/sheet.js"></script>
+	<script src="../scrollable/scrollable.js"></script>
+	<script src="../environment/environment.js"></script>
+	<script src="../actionSheet/actionSheet.js"></script>
+	<script src="shell.js"></script>
+
+	<script type="text/javascript">
+	require(['shell', 'clickTranslation', 'messaging'], function(Shell, clickTranslation, messaging, $, global, undef) {
+
+		clickTranslation.translate();
+
+		var refreshIndicator = $('#refresh-indicator'),
+			header = $('#header'),
+			refreshableContent = $('#refreshable-content');
+
+		var shell = new Shell({
+			enablePan: true,
+			header: header,
+			viewport: '#viewport',
+			gutter: '#gutter',
+			content: '#content',
+			contentWrapper: '#content-wrapper',
+			gutterWrapper: '#gutter-wrapper',
+			gutterContentWrapper: '#gutter-content-wrapper',
+			gutterContent: '#gutter-content',
+			refreshIndicator: refreshIndicator,
+			refreshableContent: refreshableContent,
+			debugContainer: '#debug',
+			onRefreshRevealing: function(percent) {
+				if(percent >= 1) {
+					refreshIndicator.html('Release to refresh...');
+				} else {
+					refreshIndicator.html('Pull down to refresh... ' + Math.round(100 * percent) + '%');
+				}
+			},
+			onRefreshing: function(complete) {
+				refreshIndicator.html('Refreshing...');
+				setTimeout(function(){
+					complete();
+					refreshableContent.find('h4:first').get(0).innerHTML = 'Refreshed! ' + (new Date().getTime());
+				}, 1200);
+			},
+			onNavigationOpening: function() {
+				//console.log('opening');
+			},
+			onNavigationOpened: function() {
+				//console.log('opened');
+			},
+			onNavigationClosing: function() {
+				//console.log('closing');
+			},
+			onNavigationClosed: function() {
+				//console.log('closed');
+			},
+            onSheetOpening: function(){
+                console.log('sheet opening');
+            },
+            onSheetClosing: function(){
+                console.log('sheet closing');
+            },
+            onSheetOpened: function(){
+                console.log('sheet opened');
+            },
+            onSheetClosed: function(){
+                console.log('sheet closed');
+            },
+            onKeyboardOpening: function() {
+            	console.log('keyboard opened!');
+            },
+            onKeyboardClosing: function() {
+            	console.log('keyboard closed!');
+            }
+		});
+
+		// messaging.subscribe('mobile.content.scrollTop', function(){ console.log('content scroll top'); });
+		// messaging.subscribe('mobile.content.scrollBottom', function(){ console.log('content scroll bottom'); });
+		// messaging.subscribe('mobile.navigation.scrollTop', function(){ console.log('nav scroll top'); });
+		// messaging.subscribe('mobile.navigation.scrollBottom', function(){ console.log('nav scroll bottom'); });
+
+
+		/*
+		shell.scrollable({
+			region: 'content',
+			load: function(pageIndex, complete, error) {
+				console.log('loading content page for pageIndex: ' + pageIndex);
+				setTimeout(function(){
+					if(pageIndex < 2) {
+						complete('new content page for ' + pageIndex);
+					} else {
+						complete();
+					}
+				}, 1000)
+			},
+			complete: function(content) {
+				console.log('rendering content page: ' + content);
+			}
+		});
+*/
+
+		shell.scrollable({
+			region: 'navigation',
+			load: function(pageIndex, complete, error) {
+				console.log('loading nav page for pageIndex: ' + pageIndex);
+				setTimeout(function(){
+					if(pageIndex < 2) {
+						complete('new nav page for ' + pageIndex);
+					} else {
+						complete();
+					}
+				}, 1000)
+			},
+			complete: function(content) {
+				console.log('rendering nav page: ' + content);
+			}
+		});
+
+		header.on('tap', function(){
+			if(shell.navigationVisible()) {
+				shell.navigationVisible(false);
+			} else {
+				shell.navigationVisible(true);
+			}
+		});
+		shell.navigable(true);
+		shell.refreshable(true);
+
+		$('#left').on('tap', function(e){
+			shell.setContent('new content from left. <a href="#" data-messagename="m1">Message Link</a>', {
+				animate: 'left',
+			});
+		});
+
+		$('#right').on('tap', function(){
+			shell.setContent('new content from right <a href="#" data-messagename="m1">Message Link 2</a>', {
+				animate: 'right',
+			});
+		});
+
+		$('#dissolve').on('tap', function(){
+			shell.setContent(('' +
+							'<p><a href="#" data-messagename="m1">Message Link 3</a> 1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>2 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>3 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							'<p>4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>5 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>6 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							'<p>7 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>8 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>9 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							'<p>10 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>11 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>12 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							''), {
+				animate: 'dissolve',
+			});
+		});
+
+		$('#replace').on('tap', function(){
+			shell.setContent(('' +
+							'<p>1 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>2 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>3 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							'<p>4 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>5 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>6 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							'<p>7 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>8 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>9 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							'<p>10 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ac massa vitae lorem lacinia pulvinar. Maecenas non tortor eu mi tincidunt porta. Nullam ultricies, justo eget hendrerit rhoncus, nisl turpis ultricies dolor, sodales adipiscing odio neque sagittis magna. Aliquam lacus neque, luctus sed adipiscing at, elementum nec enim. Pellentesque nec pulvinar sapien. Duis vel condimentum nisl, eget pulvinar nibh. Pellentesque ipsum leo, scelerisque condimentum lectus at, porttitor aliquam magna. Duis eleifend tempus tristique. Vivamus molestie erat sed urna lacinia venenatis.</p>' +
+							'<p>11 Nulla facilisi. Ut tempor dictum est, ut auctor massa molestie eget. In risus nibh, pellentesque sed massa quis, viverra elementum tellus. Donec aliquet venenatis lacus sed iaculis. Vivamus at consequat magna, sed tincidunt erat. Sed hendrerit velit vitae mollis sagittis. Aenean vitae commodo tellus. Nulla mauris dolor, mollis ut nisl in, congue porta magna. Nam elementum magna mollis lorem sodales, quis malesuada velit posuere. Donec et tellus id libero placerat commodo. Quisque eget hendrerit lorem, in semper nunc. Aliquam eget turpis fermentum, rutrum magna vitae, porta odio.</p>' +
+							'<p>12 Nam suscipit sollicitudin tellus, et bibendum velit. Aliquam risus turpis, dictum non lorem in, varius luctus purus. Maecenas tincidunt condimentum auctor. Nulla in facilisis massa. Phasellus ultricies placerat velit. Duis facilisis risus ut neque dapibus iaculis. Vivamus et tincidunt mauris, eget volutpat mauris. Curabitur ullamcorper dictum odio. Morbi semper lorem quam, non tempor tortor gravida a.</p>' +
+							''));
+		});
+
+		$('#message').on('tap', function(){
+			shell.displayMessage('Warning Message!', {
+				cssClass: 'warning',
+				disappearAfter: 5000
+			});
+		});
+
+		$('#debugger').on('tap', function(){
+			shell.debug('Debug message ' + new Date().getTime());
+		});
+
+		$('#loading').on('tap', function(){
+			shell.showLoading({
+				opacity: 0.8,
+				content: '<span>Loading...</span>'
+			});
+			setTimeout(function(){
+				shell.hideLoading();
+			}, 1500);
+		});
+
+		$('#auto').on('tap', function(){
+			setTimeout(function(){
+				shell.navigationVisible(true);
+			}, 200);
+
+			setTimeout(function(){
+				shell.scrollNavigationTo(100);
+			}, 700);
+
+			setTimeout(function(){
+				shell.navigationVisible(false);
+			}, 1200);
+
+			setTimeout(function(){
+				shell.scrollContentTo(100);
+			}, 1700);
+		});
+
+        var link1 = $('<a href="#" class="link">Link 1</a>'),
+            link2 = $('<a href="#" class="link">Link 2</a>'),
+            link3 = $('<a href="#" class="link">Link 3</a>'),
+            linkCancel = $('<a href="#" class="action-cancel">Cancel</a>');
+
+        linkCancel.on('click', function(){
+        	shell.hideSheet();
+        });
+
+        link1.on('click', function(){
+            console.log("clicked 1");
+        })
+        link2.on('tap', function(){
+            console.log("tapped 2");
+        })
+
+        $('#actions').on('tap', function(){
+            shell.displaySheet({
+                links: [
+                    link1,
+                    link2,
+                    link3,
+                    linkCancel,
+                ]
+            })
+        });
+
+        $('#form').on('tap', function(){
+			shell.setContent(('' +
+							'<p>Hello</p>' +
+							'<p><input type="text" placeholder="some value..." /></p>' +
+							'<p><textarea placeholder="some other value..."></textarea></p>' +
+							'<p>End of Form</p>' +
+							''), {
+				animate: 'dissolve',
+			});
+        })
+
+        messaging.subscribe('m1', function(data) {
+        	console.log('m1 message received');
+        	console.log($(data.target));
+        });
+
+	}, jQuery, window);
+	</script>
+</body>

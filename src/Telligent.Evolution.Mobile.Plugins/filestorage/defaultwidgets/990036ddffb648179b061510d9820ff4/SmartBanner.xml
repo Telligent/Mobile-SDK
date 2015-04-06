@@ -1,0 +1,304 @@
+﻿<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:SmartBanner_Name}" cssClass="smart-banner" description="${resource:SmartBanner_Description}" instanceIdentifier="8a1ef5a324d64ca2869b07d0e6883cdb" isCacheable="true" varyCacheByUser="false" showHeaderByDefault="false">
+		<contentScript>
+			<![CDATA[
+## Don't show the banner on login
+#if ($core_v2_authentication.IsAuthorizationRequest)
+	$core_v2_widget.Hide()
+#end
+
+#set ($dismissalMinutes = $core_v2_utility.ParseInt($core_v2_widget.GetStringValue('DismissalMinutes', '30')))
+
+#set ($iOSDistribution = $core_v2_widget.GetStringValue('iOSDistribution', 'exclude'))
+#set ($iOSStoreUrl = false)
+#set ($iOSInstallPackage = false)
+#set ($iOSIconHtml = false)
+#set ($iOSInstallUrl = false)
+#set ($iOSAppName = false)
+#set ($iOSAppDescription = false)
+
+#set ($androidDistribution = $core_v2_widget.GetStringValue('AndroidDistribution', 'exclude'))
+#set ($androidStoreUrl = false)
+#set ($androidIcon = false)
+#set ($androidInstallPackage = false)
+#set ($androidIconHtml = false)
+#set ($androidInstallUrl = false)
+#set ($androidAppName = false)
+#set ($androidAppDescription = false)
+
+#set ($webBannerId = "widgets.smartBanner.template")
+#set ($usesWebBanner = false)
+#set ($configurationValidationMessages = $core_v2_utility.Split('',''))
+
+## iOS App Store Smart Banner
+#if ($iOSDistribution == 'store')
+	## if it's a URL, parse store URL to isolate App ID
+	#set ($iOSStoreUrl = $core_v2_utility.Trim($core_v2_widget.GetStringValue('iOSStoreUrl', '')))
+	#set ($iOSStoreUrl = $core_v2_utility.Replace($iOSStoreUrl, "^http.*/id(?<appid>[0-9]{9}).*$", "${appid}"))
+	#if ($iOSStoreUrl && $iOSStoreUrl.Length == 9)
+		$core_v2_page.AddMetaTag('apple-itunes-app', "app-id=${iOSStoreUrl}")
+	#else
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_iOSStoreUrl_Required')))
+	#end
+
+## iOS Direct
+#elseif($iOSDistribution == 'direct')
+	## Parse App Details out of the Package
+	#set ($iOSInstallPackage = $core_v2_widget.GetUrlValue('iOSInstallPackage', ''))
+	#set ($mobileAppPackage = false)
+	#set ($mobileAppPackage = $mobile_v2_application.Get($iOSInstallPackage))
+	#if ($mobileAppPackage && $mobileAppPackage.Type == 'iOS')
+		#set ($iOSAppName = $mobileAppPackage.Name)
+		#set ($iOSIconHtml = $core_v2_ui.GetResizedImageHtml($mobileAppPackage.IconUrl, 60, 60, "%{ ResizeMethod = 'ZoomAndCrop' }"))
+		#set ($iOSInstallUrl = $mobileAppPackage.InstallationUrl)
+	#end
+
+	#set ($iOSAppDescription = $core_v2_widget.GetUrlValue('iOSAppDescription', ''))
+
+	#if (!$iOSInstallPackage || $iOSInstallPackage.length == 0 || !$mobileAppPackage)
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_iOSInstallPackage_Required')))
+	#end
+
+	#set ($usesWebBanner = true)
+#end
+
+## Android Store URL
+#if ($androidDistribution == 'store')
+	#set ($androidStoreUrl = $core_v2_utility.Trim($core_v2_widget.GetStringValue('AndroidStoreUrl', '')))
+	#if (!$androidStoreUrl || $androidStoreUrl.length == 0)
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_AndroidStoreUrl_Required')))
+	#end
+
+	#set ($androidIcon = $core_v2_widget.GetUrlValue('AndroidIcon', ''))
+	#if (!$androidIcon || $androidIcon.length == 0)
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_AndroidIcon_Required')))
+	#end
+	#set ($androidIconHtml = $core_v2_ui.GetResizedImageHtml($androidIcon, 60, 60, "%{ ResizeMethod = 'ZoomAndCrop' }"))
+
+	#set ($androidAppName = $core_v2_widget.GetUrlValue('AndroidAppName', ''))
+	#if (!$androidAppName || $androidAppName.length == 0)
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_AndroidAppName_Required')))
+	#end
+
+	#set ($androidAppDescription = $core_v2_widget.GetStringValue('AndroidAppDescription', ''))
+	#set ($androidInstallUrl = $androidStoreUrl)
+
+	#set ($usesWebBanner = true)
+
+## Android Direct
+#elseif($androidDistribution == 'direct')
+	## Parse App Details out of the Package
+	#set ($androidInstallPackage = $core_v2_widget.GetUrlValue('androidInstallPackage', ''))
+	#set ($mobileAppPackage = false)
+	#set ($mobileAppPackage = $mobile_v2_application.Get($androidInstallPackage))
+	#if ($mobileAppPackage && $mobileAppPackage.Type == 'Android')
+		#set ($androidAppName = $mobileAppPackage.Name)
+		#set ($androidIconHtml = $core_v2_ui.GetResizedImageHtml($mobileAppPackage.IconUrl, 60, 60, "%{ ResizeMethod = 'ZoomAndCrop' }"))
+		#set ($androidInstallUrl = $mobileAppPackage.InstallationUrl)
+	#end
+
+	#if (!$androidInstallPackage || $androidInstallPackage.length == 0 || !$mobileAppPackage)
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_AndroidInstallPackage_Required')))
+	#end
+
+	#set ($androidAppDescription = $core_v2_widget.GetStringValue('AndroidAppDescription', ''))
+
+	#set ($usesWebBanner = true)
+#end
+
+## Link Mode
+#set ($linkMode = $core_v2_widget.GetStringValue('linkMode', 'view'))
+#set ($appUrlScheme = '')
+#set ($viewLabel = '')
+#set ($viewInstallLabel = '')
+#set ($installLabel = '')
+#if ($linkMode == 'view')
+	#set ($appUrlScheme = $core_v2_utility.Trim($core_v2_widget.GetStringValue('appUrlScheme', '')))
+	#set ($viewLabel = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('viewLabel', '${resource:ViewLabel}')))
+	#set ($viewInstallLabel = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('viewInstallLabel', '${resource:ViewInstallLabel}')))
+	#if (!$appUrlScheme || $appUrlScheme.length == 0)
+		#set ($i = $configurationValidationMessages.Add($core_v2_language.GetResource('Error_AppUrlScheme_Required')))
+	#end
+#else
+	#set ($installLabel = $core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('installLabel', '${resource:InstallLabel}')))
+#end
+
+
+#if ($core_v2_widget.IsInWidgetPreviewMode)
+	## Explain widget in preview mode
+	<div class="message">
+		$core_v2_language.GetResource('PageEditMessage')
+	</div>
+
+	## Render configuration errors in preview mode
+	#foreach ($error in $configurationValidationMessages)
+	#beforeall
+		<div class="message error margin-top">
+	#each
+			<li>$error</li>
+	#afterall
+		</div>
+	#end
+#elseif ($usesWebBanner && $configurationValidationMessages.count == 0)
+	<style type="text/css">$core_v2_widget.ExecuteFile('style.css')</style>
+
+	#registerEndOfPageHtml('telligent.evolution.widgets.smartBanner')
+		<script type="text/javascript" src="$core_v2_encoding.HtmlAttributeEncode($core_v2_widget.GetFileUrl('ui.js'))"></script>
+		<script type="text/html" id="$core_v2_encoding.HtmlAttributeEncode($webBannerId)">
+			<div class="smart-banner-wrapper">
+				<% if(singleViewLink) { %>
+					<a href="<%: installUrl %>" data-apphref="<%: viewUrl %>" class="view open unified"><%: buttonLabel %></a>
+				<% } else { %>
+					<a href="<%: viewUrl %>" class="view open redirect"><%: viewLabel %></a>
+					<a href="<%: installUrl %>" class="view open install"><%: viewInstallLabel %></a>
+				<% } %>
+				<a href="#" class="dismiss">$core_v2_language.GetResource('Dismiss')</a>
+				<a href="<%: installUrl %>" data-apphref="<%: viewUrl %>" class="view icon"><%= iconHtml %></a>
+				<a href="<%: installUrl %>" data-apphref="<%: viewUrl %>" class="view name"><%: name %></a>
+				<span class="description"><%: description %></span>
+			</div>
+		</script>
+	#end
+
+	#registerEndOfPageHtml()
+		<script type="text/javascript">
+		jQuery(function(j) {
+			j.telligent.evolution.widgets.smartBanner.register({
+				wrapperId: '#$core_v2_encoding.JavascriptEncode($core_v2_widget.WrapperElementId)',
+				dismissalMinutes: $dismissalMinutes,
+				template: '$core_v2_encoding.JavascriptEncode($webBannerId)',
+				androidDistribution: '$core_v2_encoding.JavascriptEncode($androidDistribution)',
+				androidInstallUrl: #if ($androidInstallUrl) '$core_v2_encoding.JavascriptEncode($androidInstallUrl)' #else '' #end,
+				androidIconHtml: #if ($androidIconHtml) '$core_v2_encoding.JavascriptEncode($androidIconHtml)' #else '' #end,
+				androidAppName: #if ($androidAppName) '$core_v2_encoding.JavascriptEncode($androidAppName)' #else '' #end,
+				androidAppDescription: #if ($androidAppDescription) '$core_v2_encoding.JavascriptEncode($androidAppDescription)' #else '' #end,
+				iOSDistribution: '$core_v2_encoding.JavascriptEncode($iOSDistribution)',
+				iOSInstallUrl: #if ($iOSInstallUrl) '$core_v2_encoding.JavascriptEncode($iOSInstallUrl)' #else '' #end,
+				iOSIconHtml: #if ($iOSIconHtml) '$core_v2_encoding.JavascriptEncode($iOSIconHtml)' #else '' #end,
+				iOSAppName: #if ($iOSAppName) '$core_v2_encoding.JavascriptEncode($iOSAppName)' #else '' #end,
+				iOSAppDescription: #if ($iOSAppDescription) '$core_v2_encoding.JavascriptEncode($iOSAppDescription)' #else '' #end,
+				linkMode: '$core_v2_encoding.JavascriptEncode($linkMode)',
+				appUrlScheme: '$core_v2_encoding.JavascriptEncode($appUrlScheme)',
+				viewLabel: '$core_v2_encoding.JavascriptEncode($viewLabel)',
+				viewInstallLabel: '$core_v2_encoding.JavascriptEncode($viewInstallLabel)',
+				installLabel: '$core_v2_encoding.JavascriptEncode($installLabel)',
+				currentUrl: '$core_v2_encoding.JavascriptEncode($core_v2_page.Url)',
+				homeUrl: '$core_v2_encoding.JavascriptEncode($core_v2_urls.Home())'
+			});
+		});
+		</script>
+	#end
+#end
+
+		]]>
+		</contentScript>
+		<headerScript>
+			<![CDATA[
+$core_v2_widget.ApplyTokens($core_v2_widget.GetStringValue('fragmentHeader', '${resource:SmartBanner_Name}'))
+		]]>
+		</headerScript>
+	<configuration>
+	  <![CDATA[
+<propertyGroup id="iOSOptions" resourceName="iOSOptions">
+	<property id="iOSDistribution" dataType="string" resourceName="iOSDistribution_Name" descriptionResourceName="iOSDistribution_Description" defaultValue="exclude" controlType="Telligent.Evolution.Controls.PropertyVisibilityValueSelectionControl, Telligent.Evolution.Controls">
+		<propertyValue value="none" resourceName="iOS_Distribution_None" propertiesToHide="iOSStoreUrl,iOSInstallPackage,iOSAppDescription" propertiesToShow="" />
+		<propertyValue value="store" resourceName="iOS_Distribution_Store" propertiesToHide="iOSInstallPackage,iOSAppDescription" propertiesToShow="iOSStoreUrl" />
+		<propertyValue value="direct" resourceName="iOS_Distribution_Direct" propertiesToHide="iOSStoreUrl" propertiesToShow="iOSInstallPackage,iOSAppDescription" />
+	</property>
+	<property id="iOSStoreUrl" resourceName="iOSStoreUrl_Name" descriptionResourceName="iOSStoreUrl_Description" dataType="string" />
+	<property id="iOSInstallPackage" dataType="url" resourceName="iOSInstallPackage_Name" descriptionResourceName="iOSInstallPackage_Description" controlType="Telligent.Evolution.Controls.ThemeFileUrlControl, Telligent.Evolution.Controls">
+		<propertyRule type="Telligent.Evolution.Controls.PropertyRules.FileExtensionRule, Telligent.Evolution.Controls" validExtensions="ipa" />
+	</property>
+	<property id="iOSAppDescription" resourceName="AppDescription_Name" descriptionResourceName="AppDescription_Description" dataType="string" />
+</propertyGroup>
+<propertyGroup id="AndroidOptions" resourceName="AndroidOptions">
+	<property id="AndroidDistribution" dataType="string" resourceName="AndroidDistribution_Name" descriptionResourceName="AndroidDistribution_Description" defaultValue="exclude" controlType="Telligent.Evolution.Controls.PropertyVisibilityValueSelectionControl, Telligent.Evolution.Controls">
+		<propertyValue value="none" resourceName="Android_Distribution_None" propertiesToHide="AndroidStoreUrl,AndroidInstallPackage,AndroidIcon,AndroidAppName,AndroidAppDescription" propertiesToShow="" />
+		<propertyValue value="store" resourceName="Android_Distribution_Store" propertiesToHide="AndroidInstallPackage" propertiesToShow="AndroidAppName,AndroidStoreUrl,AndroidIcon,AndroidAppDescription" />
+		<propertyValue value="direct" resourceName="Android_Distribution_Direct" propertiesToHide="AndroidStoreUrl,AndroidIcon,AndroidAppName" propertiesToShow="AndroidInstallPackage,AndroidAppDescription" />
+	</property>
+	<property id="AndroidStoreUrl" resourceName="AndroidStoreUrl_Name" descriptionResourceName="AndroidStoreUrl_Description" dataType="string" />
+	<property id="AndroidInstallPackage" dataType="url" resourceName="AndroidInstallPackage_Name" descriptionResourceName="AndroidInstallPackage_Description" controlType="Telligent.Evolution.Controls.ThemeFileUrlControl, Telligent.Evolution.Controls">
+		<propertyRule type="Telligent.Evolution.Controls.PropertyRules.FileExtensionRule, Telligent.Evolution.Controls" validExtensions="apk" />
+	</property>
+	<property id="AndroidAppName" resourceName="AndroidAppName_Name" descriptionResourceName="AndroidAppName_Description" dataType="string" />
+	<property id="AndroidAppDescription" resourceName="AppDescription_Name" descriptionResourceName="AppDescription_Description" dataType="string" />
+	<property id="AndroidIcon" dataType="url" resourceName="AndroidIcon_Name" descriptionResourceName="AndroidIcon_Description" controlType="Telligent.Evolution.Controls.ThemeFileUrlControl, Telligent.Evolution.Controls">
+		<propertyRule type="Telligent.Evolution.Controls.PropertyRules.FileExtensionRule, Telligent.Evolution.Controls" validExtensions="png,jpg,gif,jpeg" />
+	</property>
+</propertyGroup>
+<propertyGroup id="Options" resourceName="Options">
+	<property id="linkMode" dataType="string" resourceName="LinkMode_Name" descriptionResourceName="LinkMode_Description" defaultValue="view" controlType="Telligent.Evolution.Controls.PropertyVisibilityValueSelectionControl, Telligent.Evolution.Controls">
+		<propertyValue value="view" resourceName="LinkMode_View" propertiesToHide="installLabel" propertiesToShow="viewLabel,viewInstallLabel,appUrlScheme" />
+		<propertyValue value="install" resourceName="LinkMode_Install" propertiesToHide="viewLabel,viewInstallLabel,appUrlScheme" propertiesToShow="installLabel" />
+	</property>
+	<property id="appUrlScheme" resourceName="AppUrlScheme_Name" descriptionResourceName="AppUrlScheme_Description" dataType="string" />
+	<property id="viewLabel" resourceName="ViewLabel_Name" descriptionResourceName="ViewLabel_Description" dataType="string" defaultValue="${resource:ViewLabel}" controlType="Telligent.Evolution.Controls.ContentFragmentTokenStringControl, Telligent.Evolution.Controls" />
+	<property id="viewInstallLabel" resourceName="ViewInstallLabel_Name" descriptionResourceName="ViewInstallLabel_Description" dataType="string" defaultValue="${resource:ViewInstallLabel}" controlType="Telligent.Evolution.Controls.ContentFragmentTokenStringControl, Telligent.Evolution.Controls" />
+	<property id="installLabel" resourceName="InstallLabel_Name" descriptionResourceName="InstallLabel_Description" dataType="string" defaultValue="${resource:InstallLabel}" controlType="Telligent.Evolution.Controls.ContentFragmentTokenStringControl, Telligent.Evolution.Controls" />
+	<property id="DismissalMinutes" resourceName="DismissalMinutes_Name" descriptionResourceName="DismissalMinutes_Description" dataType="int" defaultValue="30" />
+</propertyGroup>
+		]]>
+	</configuration>
+		<languageResources>
+			<language key="en-us">
+				<resource name="SmartBanner_Name">Mobile App Smart Banner</resource>
+				<resource name="SmartBanner_Description">Identifies to mobile devices that a native app is available.</resource>
+				<resource name="iOSOptions">iOS</resource>
+				<resource name="Options">Options</resource>
+				<resource name="AndroidOptions">Android</resource>
+				<resource name="CF_Title">Title</resource>
+				<resource name="AppDescription_Name">App Description</resource>
+				<resource name="AppDescription_Description">Optional</resource>
+				<resource name="DismissalMinutes_Name">Dismissal Minutes</resource>
+				<resource name="DismissalMinutes_Description">Time duration in minutes during which banners are suppressed after dismissing. Does not apply to native iOS App Store Banners (iOS App Store Links).</resource>
+				<resource name="iOSDistribution_Name">iOS App Distribution</resource>
+				<resource name="iOSDistribution_Description">Method for distributing a native iOS App</resource>
+				<resource name="iOS_Distribution_None">Do not distribute an iOS App</resource>
+				<resource name="iOS_Distribution_Store">Link to the App Store</resource>
+				<resource name="iOS_Distribution_Direct">Direct download</resource>
+				<resource name="AndroidDistribution_Name">Android App Distribution</resource>
+				<resource name="AndroidDistribution_Description">Method for distributing a native Android App</resource>
+				<resource name="Android_Distribution_None">Do not distribute an Android App</resource>
+				<resource name="Android_Distribution_Store">Link to the Play Store</resource>
+				<resource name="Android_Distribution_Direct">Direct download</resource>
+				<resource name="AndroidAppName_Name">App Name</resource>
+				<resource name="AndroidAppName_Description">Required</resource>
+				<resource name="iOSStoreUrl_Name">iOS App ID or App Store URL.</resource>
+				<resource name="iOSStoreUrl_Description"><![CDATA[Provide either the nine-digit App ID or the App's URL. Required.<br /> The <a href="https://linkmaker.itunes.apple.com" target="_blank">iTunes Link Maker</a> can help identify App URLs.<br /> App Store Links use native <a href="https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/PromotingAppswithAppBanners/PromotingAppswithAppBanners.html" target="_blank">iOS Smart App Banners</a>.]]></resource>
+				<resource name="iOSInstallPackage_Name">iOS App Bundle</resource>
+				<resource name="iOSInstallPackage_Description">.IPA Format. The banner name and icon are determined from the IPA file. Required.</resource>
+				<resource name="AndroidStoreUrl_Name">Google Play Store URL</resource>
+				<resource name="AndroidStoreUrl_Description"><![CDATA[Link to the <a href="http://developer.android.com/distribute/googleplay/promote/linking.html" target="_blank">app's URL</a> in the Play Store. Required.]]></resource>
+				<resource name="AndroidInstallPackage_Name">Android App Package</resource>
+				<resource name="AndroidInstallPackage_Description">.APK Format. The banner name and icon are determined from the APK file. Required.</resource>
+				<resource name="AndroidIcon_Name">Android App Icon</resource>
+				<resource name="AndroidIcon_Description">Ideally scaled to 120x120px. Required</resource>
+				<resource name="InstallLabel">Free</resource>
+				<resource name="InstallLabel_Name">Install Button Label</resource>
+				<resource name="InstallLabel_Description">Label of the Install and Download button</resource>
+				<resource name="LinkMode_Name">Link Mode</resource>
+				<resource name="LinkMode_Description">'View' enables opening the currently-viewed page in the native app, falling back to 'Install' when it's not not available.</resource>
+				<resource name="LinkMode_View">View or Install</resource>
+				<resource name="LinkMode_Install">Install Only</resource>
+				<resource name="ViewLabel_Name">View Button Label</resource>
+				<resource name="ViewLabel_Description">Label of the button when in View mode</resource>
+				<resource name="ViewLabel">Open</resource>
+				<resource name="ViewInstallLabel_Name">Install Button Label</resource>
+				<resource name="ViewInstallLabel_Description">Label of the button when it can't View and falls back to Install</resource>
+				<resource name="ViewInstallLabel">Install</resource>
+				<resource name="AppUrlScheme_Name">App URL Scheme</resource>
+				<resource name="AppUrlScheme_Description">Custom URL scheme defined by the app</resource>
+				<resource name="Dismiss">Dismiss</resource>
+				<resource name="PageEditMessage">The Mobile Smart Banner is visible when viewed from iOS or Android. iOS requires either an App Store link or a pre-compiled downloadable app bundle served over HTTPS. Android requires either Play Store information or a pre-compiled downloadable app bundle.</resource>
+				<resource name="Error_iOSStoreUrl_Required">The iOS App ID or Store URL is required when linking to the App Store.</resource>
+				<resource name="Error_iOSInstallPackage_Required">The iOS App Bundle IPA file is required when using iOS direct download.</resource>
+				<resource name="Error_AndroidStoreUrl_Required">The Google Play Store URL is required when linking to the Play Store.</resource>
+				<resource name="Error_AndroidIcon_Required">The Android App Icon is required when linking to the Play Store.</resource>
+				<resource name="Error_AndroidAppName_Required">The Android App Name is required when linking to the Play Store.</resource>
+				<resource name="Error_AndroidInstallPackage_Required">The Android App Bundle APK file is required when using Android direct download.</resource>
+				<resource name="Error_AppUrlScheme_Required">The App URL Scheme is required when using the View link mode.</resource>
+			</language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

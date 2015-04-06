@@ -1,0 +1,4 @@
+$core_v2_page.SetContentType('application/json')
+#set($file = $core_v2_page.GetFormValue('fileType'))
+#set($fileType = $core_v2_ui.GetMimeType($file))
+{"type":"$fileType"}

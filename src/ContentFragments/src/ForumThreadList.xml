@@ -1,0 +1,75 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:ForumThreadList_Name}" version="7.0.0.1" instanceIdentifier="c6af9d06240940beae71ade1bf750570" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="forumthread-list">
+		<contentScript>
+		<![CDATA[
+#set($forumId = false)
+#set($forumId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('ForumId')))
+#if (!$forumId)
+	$core_v2_widget.Hide()
+#end
+
+#set($forum = $core_v2_forum.Get($forumId))
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($forum.Group.Url)">$forum.Group.Name</a>
+		<h1>$forum.Name</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($forum.Group.AvatarUrl, 40, 40, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")</div>
+	<div class="ui-links actions" data-maxlinks="0">
+		<ul>
+			#set ($bookmarkableContentId = $forum.ApplicationId)
+			#set ($bookmarkableContentTypeId = $core_v2_forum.ContentTypeId)
+			#if ($core_v2_bookmark.SupportsBookmarks($bookmarkableContentTypeId) && $core_v2_bookmark.CanBookmark($bookmarkableContentId, $bookmarkableContentTypeId) && $core_v2_bookmark.CanUnBookmark($bookmarkableContentId, $bookmarkableContentTypeId))
+				<li>$core_v2_ui.Bookmark($bookmarkableContentId, $bookmarkableContentTypeId)</li>
+			#end
+			<li class="action-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+			<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+		</ul>
+	</div>
+</div>
+
+## load and render threads
+<div class="post-list forums">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.forumThreadList.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			answerUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('answer.vm'))',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			postUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('forum-addthread', $forumId))',
+			canPost: #if($core_v2_nodePermission.Get("forums", $forumId, "Forum_CreatePost").IsAllowed) true#else false#end
+		});
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="ForumThreadList_Name">Forum Thread List</resource>
+		<resource name="no_threads">There are no threads in this forum.</resource>
+		<resource name="no_replies">No replies</resource>
+		<resource name="reply_count">{0} reply</resource>
+		<resource name="replies_count">{0} replies</resource>
+		<resource name="answered">Answered</resource>
+		<resource name="plus_more_answer">Plus {0} more answer...</resource>
+		<resource name="plus_more_answers">Plus {0} more answers...</resource>
+		<resource name="post">New</resource>
+		<resource name="more">More</resource>
+		<resource name="cancel">Cancel</resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

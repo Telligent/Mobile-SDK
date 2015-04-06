@@ -1,0 +1,25 @@
+## #set($likers = $core_v2_like.List("%{ ContentId = $contentId, ContentTypeId = $contentTypeId, SortBy = 'Date', SortOrder = 'Descending', TypeId = $typeId }"))
+#set($likers = $core_v2_like.List("%{ ContentId = $contentId, ContentTypeId = $contentTypeId, SortBy = 'Date', SortOrder = 'Descending' }"))
+#foreach($liker in $likers)
+#each
+	#set ($user = $liker.User)
+	<div class="post-list-item content-item liker"
+		data-targeturl="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">
+		<div class="post">
+			<div class="avatar">
+				$core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 40, 40, "%{border='0', alt=$user.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($user.ProfileUrl)">$user.DisplayName</a>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item liker"><div class="message norecords">$core_v2_language.GetResource('no_likers')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($likers.TotalCount > (($likers.PageIndex + 1) * $likers.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

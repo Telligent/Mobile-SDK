@@ -1,0 +1,153 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:CreateEditForumThread_Name}" version="7.0.0.1" instanceIdentifier="f50a8f2949d2477c9fb18ffa47f64cbf" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="create-edit-forum-thread">
+		<contentScript>
+			<![CDATA[
+#set ($pageName = $mobile_v1_url.Current)
+#set ($mode = false)
+#set ($contentTypeId = $core_v2_forumThread.ContentTypeId)
+
+#set ($forum = false)
+#set ($forumId = false)
+#set ($forumId = $mobile_v1_urlToken.Value('ForumId'))
+#if ($forumId)
+	#set ($forumId = $core_v2_utility.ParseInt($forumId))
+#end
+
+#set ($forumThread = false)
+#set ($forumThreadId = false)
+#set ($forumThreadId = $mobile_v1_urlToken.Value('ForumThreadId'))
+#if ($forumThreadId)
+	#set ($forumThreadId = $core_v2_utility.ParseInt($forumThreadId))
+#end
+
+#if ($pageName == 'forum-addthread')
+	#set ($mode = 'add')
+	#if (!$forumId)
+		$core_v2_widget.Hide()
+	#end
+	#set ($forum = $core_v2_forum.Get($forumId))
+	#if (!$forum)
+		$core_v2_widget.Hide()
+	#end
+#elseif($pageName == 'forumthread-edit')
+	#set ($mode = 'edit')
+	#if (!$forumThreadId)
+		$core_v2_widget.Hide()
+	#end
+	#set ($forumThread = $core_v2_forumThread.Get($forumThreadId))
+	#if (!$forumThread)
+		$core_v2_widget.Hide()
+	#end
+	#set ($forum = $core_v2_forum.Get($forumThread.ForumId))
+	#if (!$forum)
+		$core_v2_widget.Hide()
+	#end
+#end
+
+#set ($bodyId = $core_v2_widget.UniqueId('PostBody'))
+#set ($subjectId = $core_v2_widget.UniqueId('Subject'))
+#set ($threadTypeId = $core_v2_widget.UniqueId('ThreadType'))
+#set ($subscribeId = $core_v2_widget.UniqueId('Subscribe'))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($forum.Group.Url)">$forum.Group.Name</a>
+		<a href="$core_v2_encoding.HtmlAttributeEncode($forum.Url)">$forum.Name</a>
+		#if ($mode == 'add')
+			#if ($forum.AllowedThreadTypes.Count > 1)
+				<h1>$core_v2_language.GetResource('NewQuestionOrDiscussion')</h1>
+			#elseif ($forum.AllowedThreadTypes.get_Item(0) == 'QuestionAndAnswer')
+				<h1>$core_v2_language.GetResource('NewQuestion')</h1>
+			#else
+				<h1>$core_v2_language.GetResource('NewDiscussion')</h1>
+			#end
+		#else
+			<h1>$forumThread.Subject</h1>
+		#end
+	</div>
+</div>
+
+
+<fieldset>
+
+	## Thread Type
+	#if ($core_v2_forumConfiguration.EnableThreadStatus && $forum.AllowedThreadTypes.Count > 1)
+		#set($threadType = $forum.DefaultThreadType)
+		#set($threadType = $forumThread.ThreadType)
+		<div class="form-field select">
+			<select id="$core_v2_encoding.HtmlAttributeEncode($threadTypeId)">
+				<option value="QuestionAndAnswer" #if($threadType == 'QuestionAndAnswer') selected="selected"#end>$core_v2_language.GetResource('threadType_QA')</option>
+				<option value="Discussion" #if($threadType == 'Discussion') selected="selected"#end>$core_v2_language.GetResource('threadType_Discussion')</option>
+			</select>
+		</div>
+	#end
+
+	## Subject
+	<div class="form-field text">
+		<label for="$core_v2_encoding.HtmlAttributeEncode($subjectId)">$core_v2_language.GetResource('subject')</label>
+		<input type="text" maxlength="256" id="$core_v2_encoding.HtmlAttributeEncode($subjectId)" value="#if($forumThread)$!core_v2_encoding.HtmlAttributeEncode($forumThread.Subject)#end" />
+	</div>
+
+	## Body
+	<div class="form-field editor">
+		#set ($body = '')
+		#if ($forumThread && $mode == 'edit')
+			#set ($body = $forumThread.Body('raw'))
+		#end
+		<label for="$core_v2_encoding.HtmlAttributeEncode($bodyId)">$core_v2_language.GetResource('body')</label>
+		$core_v2_editor.Render('PostBody', "%{Width='100%', Height='60px', Value=$body, ContentTypeId=$contentTypeId}")
+	</div>
+
+	## Email Replies
+	#if ($mode == "add" && $core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+		<div class="form-field checkbox inline-label">
+			<label for="$core_v2_encoding.HtmlAttributeEncode($subscribeId)">$core_v2_language.GetResource('subscribe')</label>
+			<input id="$core_v2_encoding.HtmlAttributeEncode($subscribeId)" type="checkbox" checked/>
+		</div>
+	#end
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.createEditForumThread.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			threadUrl: #if ($forumThread) '$core_v2_encoding.JavascriptEncode($forumThread.Url)' #else null #end,
+			forumId: $forum.Id,
+			forumThreadId: #if ($forumThread) $forumThread.Id #else null #end,
+			mode: '$core_v2_encoding.JavascriptEncode($mode)',
+			getBodyContent: function() { return $core_v2_editor.GetContentScript('PostBody') },
+			subjectInput: '#$core_v2_encoding.JavascriptEncode($subjectId)',
+			threadTypeInput: '#$core_v2_encoding.JavascriptEncode($threadTypeId)',
+			subscribeInput: '#$core_v2_encoding.JavascriptEncode($subscribeId)',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			editLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('edit'))'
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript></headerScript>
+		<languageResources>
+		  <language key="en-us">
+			<resource name="CreateEditForumThread_Name">Create Edit Forum Thread</resource>
+			<resource name="subject">Subject</resource>
+			<resource name="body">Description</resource>
+			<resource name="threadType">Thread type</resource>
+			<resource name="threadType_QA">Question</resource>
+			<resource name="threadType_Discussion">Discussion</resource>
+			<resource name="subscribe">Notify me about replies</resource>
+			<resource name="post">Post</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="NewQuestionOrDiscussion">Ask a question or start a discussion</resource>
+			<resource name="NewQuestion">Ask a question</resource>
+			<resource name="NewDiscussion">Start a discussion</resource>
+		  </language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

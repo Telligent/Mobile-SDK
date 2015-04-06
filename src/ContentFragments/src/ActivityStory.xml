@@ -1,0 +1,108 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:ActivityStory_Name}" version="7.0.0.1" instanceIdentifier="6252ef55611d4b26955d695433396c27" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="activity-story">
+		<contentScript>
+		<![CDATA[
+
+#set ($activityId = $core_v2_utility.ParseGuid($mobile_v1_urlToken.Value('ActivityStoryId')))
+#set ($story = $core_v2_activityStory.Get($activityId))
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set ($widgetUniqueStoryId = "${core_v2_widget.WrapperElementId}_story_${message.StoryId}")
+
+#set ($primaryStoryUser = $story.PrimaryUser)
+
+#set ($primaryStoryUserIsRegistered = false)
+#set ($primaryStoryUserIsRegistered = $core_v2_user.IsRegistered($primaryStoryUser.Id))
+#set ($primaryStoryUserIsAccessingUser = false)
+#if ($accessingUser.Id == $primaryStoryUser.Id)
+	#set ($primaryStoryUserIsAccessingUser = true)
+#end
+
+#set ($commentsSupported = false)
+#set ($commentsSupported = $core_v2_comments.SupportsComments($story.ContentTypeId))
+
+#set ($accessingUserCanComment = false)
+#if ($commentsSupported)
+	#set ($accessingUserCanComment = $core_v2_comments.CanCreateComment($story.ContentId, $story.ContentTypeId))
+#end
+
+#set ($widgetUniqueStoryId = "${core_v2_widget.WrapperElementId}_story_${story.StoryId}")
+#set ($storyType = $story.StoryTypeId)
+
+<div class="post activity isolated">
+	<div class="avatar">
+		#if ($primaryStoryUser.ProfileUrl)
+			<a href="$core_v2_encoding.HtmlAttributeEncode($primaryStoryUser.ProfileUrl)" class="internal-link view-user-profile">
+				$core_v2_ui.GetResizedImageHtml($primaryStoryUser.AvatarUrl, 40, 40, "%{border='0', alt=$primaryStoryUser.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+			</a>
+		#else
+			$core_v2_ui.GetResizedImageHtml($primaryStoryUser.AvatarUrl, 40, 40, "%{border='0', alt=$primaryStoryUser.DisplayName, ResizeMethod='ZoomAndCrop',border='0'}")
+		#end
+	</div>
+
+	<div class="date">$core_v2_language.FormatAgoDate($story.CreatedDate)</div>
+	<div class="content">
+		$mobile_v1_dataFormat.Detect($story.ViewHtml('Web'))
+	</div>
+
+	<div class="ui-links actions" data-maxlinks="1">
+		#if ($accessingUserIsRegistered && $core_v2_like.CanLike($story.ContentId, $story.ContentTypeId))
+			<li class="action-like-message">
+				#set($format = '{toggle} <span class="count"><span class="icon"></span>{count}</span>')
+				#set ($likeOptions = "%{ Format = $format }")
+				#if ($story.TypeId)
+					$likeOptions.Add('LikeTypeId', $story.TypeId)
+				#end
+				$core_v2_ui.Like($story.ContentId, $story.ContentTypeId, $likeOptions)
+			</li>
+		#end
+
+		#if($core_v2_activityStory.CanDelete($story.StoryId))
+			<li class="action-delete"><a href="#" class="delete" data-storyid="$story.StoryId">$core_v2_language.GetResource('delete')</a></li>
+		#end
+		<li class="action-moderate">$core_v2_ui.Moderate($story.ContentId, $story.ContentTypeId)</li>
+		<li class="action-more"><a href="#" data-more></a></li>
+		<li><a href="#" data-cancel>$core_v2_language.GetResource('Cancel')</a></li>
+	</div>
+</div>
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+
+<script>
+var deleteContext = {
+	confirm: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('deleteActivityMessage'))'
+}
+## Handle Delete clicks
+jQuery('#$core_v2_widget.WrapperElementId a.delete').each(function(){
+	var delLink = $(this);
+	delLink.off('tap').on('tap', function(){
+		jQuery.telligent.evolution.widgets.activityStory.del(delLink.data('storyid'), deleteContext);
+	});
+});
+</script>
+
+$mobile_v1_ui.Comments($story.ContentId, $story.ContentTypeId, "%{ CanFlagAsAbusive = $accessingUserIsRegistered, AccessingUserId = $accessingUser.Id }")
+
+		]]>
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+	<languageResources>
+	  <language key="en-us">
+		<resource name="ActivityStory_Name">Activity Story</resource>
+		<resource name="deleteActivityMessage">Are you sure you want to delete this story?</resource>
+		<resource name="deleteCommentMessage">Are you sure you want to delete this comment?</resource>
+		<resource name="delete">Delete</resource>
+		<resource name="comment">Comment</resource>
+		<resource name="comments">Comments</resource>
+		<resource name="Cancel">Cancel</resource>
+	  </language>
+	</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

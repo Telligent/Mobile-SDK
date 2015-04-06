@@ -1,0 +1,68 @@
+#set ($pageIndex = $core_v2_page.GetQueryStringValue('w_pageIndex'))
+#set ($query = $core_v2_page.GetQueryStringValue('w_query'))
+#set ($filter = $core_v2_page.GetQueryStringValue('w_filter'))
+
+#set($options = "%{PageIndex = $pageIndex, PageSize = 10, Query = $query}")
+#if ($filter == 'groups')
+	$options.Add('Filters', "contenttypeid::$core_v2_group.ContentTypeId")
+#elseif ($filter == 'users')
+	$options.Add('Filters', "contenttypeid::$core_v2_user.ContentTypeId")
+#else
+	#set($filters = '')
+	#foreach($contentType in $core_v2_contentType.List())
+		#set($applicationType = false)
+		#set($applicationType = $core_v2_applicationType.Get($contentType.Id))
+		#set($containerType = false)
+		#set($containerType = $core_v2_containerType.Get($contentType.Id))
+		#if ((!$applicationType || $applicationType.Errors.Count > 0) && (!$containerType || $containerType.Errors.Count > 0))
+			#if ($filters.Length == 0)
+				#set($filters = "contenttypeid::(${contentType.Id}")
+			#else
+				#set($filters = "${filters} OR ${contentType.Id}")
+		#end
+		#end
+	#end
+	#if($filters.Length > 0)
+		$options.Add('Filters', "${filters})")
+	#end
+#end
+
+#set($results = $core_v2_searchResult.List($options))
+#foreach($result in $results)
+#each
+	#set($avatarUrl = false)
+	#if($result.Content)
+		#set($avatarUrl = $result.Content.AvatarUrl)
+		#if (!$avatarUrl)
+			#set($avatarUrl = $result.Content.Application.AvatarUrl)
+			#if (!$avatarUrl)
+				#set($avatarUrl = $result.Content.Application.Container.AvatarUrl)
+			#end
+		#end
+	#end
+
+	<div class="navigation-item#if($avatarUrl) with-avatar#end">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($result.Url)">
+			#if ($avatarUrl)
+				<span class="avatar">
+					$core_v2_ui.GetResizedImageHtml($avatarUrl, 32, 32, "%{border='0', alt=$result.Title, ResizeMethod='ZoomAndCrop',border='0'}")
+				</span>
+			#end
+
+			$core_v2_language.Truncate($result.Title, 50, '…')
+
+			#if ($core_v2_encoding.HtmlDecode($core_v2_language.Truncate($result.Title, 50, '')) != $core_v2_encoding.HtmlDecode($core_v2_language.Truncate($result.Body, 50, '')))
+				<span class="description">$core_v2_language.Truncate($result.Body, 150, '…')</span>
+			#end
+		</a>
+	</div>
+#nodata
+	<div class="message norecords">$core_v2_language.GetResource('no_matches')</div>
+	<div class="data"></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($results.TotalCount > (($results.PageIndex + 1) * $results.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

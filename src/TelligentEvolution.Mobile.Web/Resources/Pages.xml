@@ -1,0 +1,424 @@
+﻿<resources>
+	<pages>
+		<!--
+		<page name="urlname" path="myapplication/{mytoken}/action">
+			<constraints>
+				<constraint token="mytoken" pattern="[a-zA-Z]*" />
+			</constraints>
+			<defaults>
+				<default token="mytoken" value="default" />
+			</defaults>
+			<contentFragments>
+				<contentFragment instanceIdentifier="ff79be4dcc9b4884bbf9a455ef5eb1c5" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+	-->
+		<page name="login" path="login">
+			<contentFragments>
+				<contentFragment instanceIdentifier="ce856d3882c4417ea991d42844187c8e" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="navigation" path="navigation">
+			<contentFragments>
+				<contentFragment instanceIdentifier="c50b1c0e777545559ed8e49d31cb89e4" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="status-add" path="activity/add">
+			<contentFragments>
+				<contentFragment instanceIdentifier="710ffc21661e48ca877df34037d90d94" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="home" path="default">
+			<contentFragments>
+				<contentFragment instanceIdentifier="387656725d5b48bdae2c451035b95d4d" configuration="" showHeader="false" cssClassAddition="" />
+				<contentFragment instanceIdentifier="cb7d40730a64458792894cec206da723" configuration="pageSize=5&amp;filterType=Site&amp;includeSubGroups=False&amp;endlessScroll=True&amp;filterName0=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes0=filters%3D948477cb045b40778bf17ce1a091db11%26filters%3D44a697e2d1b348f6951945cfa2bfc4fd%26filters%3D0f7404b7d8f24a1b97c9175af1be4570%26filters%3D06336ce1600c40e4b32d97ff811ad7bd%26filters%3Dacf00be657174a25a17de2036c694444%26filters%3D0a680cf3f19648c592dbdf8cebe3fe92%26filters%3Decf7e9ef76f0447c9b252a531c7bb651%26filters%3Dedebd6ada45a470f89e63dfc31714bd6%26filters%3Da23334fb669a421d85e91945a7b80581%26filters%3D14656a259a034311b8e346cef57ac02b%26filters%3D333cc77c019644c5aefa6e35a0011ee8%26filters%3D276a9e5128394ae98291e3f24b49cbc4%26filters%3De9dd0cb7adf74518b0961b00f3f51246%26filters%3D3d10e9df357b42038f7d3bf15f60fd61%26filters%3Dcf26068cf6644050bf69f1d5c3e7eb1a%26filters%3D432f675c15bb429c98a99e99d539587b%26948477cb045b40778bf17ce1a091db11%3DAll%2644a697e2d1b348f6951945cfa2bfc4fd%3DAll%260f7404b7d8f24a1b97c9175af1be4570%3DAll%2606336ce1600c40e4b32d97ff811ad7bd%3DAll%26acf00be657174a25a17de2036c694444%3DAll%260a680cf3f19648c592dbdf8cebe3fe92%3DAll%26ecf7e9ef76f0447c9b252a531c7bb651%3DAll%26edebd6ada45a470f89e63dfc31714bd6%3DAll%26a23334fb669a421d85e91945a7b80581%3DAll%2614656a259a034311b8e346cef57ac02b%3DAll%26333cc77c019644c5aefa6e35a0011ee8%3DAll%26276a9e5128394ae98291e3f24b49cbc4%3DAll%26e9dd0cb7adf74518b0961b00f3f51246%3DAll%263d10e9df357b42038f7d3bf15f60fd61%3DAll%26cf26068cf6644050bf69f1d5c3e7eb1a%3DAll%26432f675c15bb429c98a99e99d539587b%3DAll&amp;filterUserActivityTypes0=&amp;filterName1=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes1=&amp;filterUserActivityTypes1=&amp;filterName2=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes2=&amp;filterUserActivityTypes2=&amp;filterName3=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes3=&amp;filterUserActivityTypes3=&amp;filterName4=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes4=&amp;filterUserActivityTypes4=" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="notifications" path="notifications">
+			<contentFragments>
+				<contentFragment instanceIdentifier="39aa3e84a898400d84f1fd7b8a2c033f" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="conversations" path="conversations">
+			<contentFragments>
+				<contentFragment instanceIdentifier="5bf0e5f843ca4cd8a69bbab3ac7a6629" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="conversation-add" path="conversations/add">
+			<contentFragments>
+				<contentFragment instanceIdentifier="e87b6c2fb05a48718565338e6f5243d2" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="conversation-add-touser" path="conversations/add/{UserId}">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="e87b6c2fb05a48718565338e6f5243d2" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="conversation" path="conversations/{ConversationId}">
+			<contentFragments>
+				<contentFragment instanceIdentifier="607b7626a40345c38821ae6a76b9ff47" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="user" path="members/{UserId}">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="134293c01a044077869d09f20b300983" configuration="" showHeader="false" cssClassAddition="" />
+				<contentFragment instanceIdentifier="5f626adb9e784d19898bd6c488fb7ac9" configuration="" showHeader="false" cssClassAddition="" />
+				<contentFragment instanceIdentifier="6dd9ec44407f4d5fb9f85292c2004ee0" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="user-requestfriendship" path="members/{UserId}/requestfriendship">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="5c71ade7256f4ce58fe1f8add7f879ac" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="user-blogs" path="members/{UserId}/blogs">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="42d200b69fd4471b8e7dabce5fa81806" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="user-groups" path="members/{UserId}/groups">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="60ac1bed4b9844b893a5c8d4497261c8" configuration="pageSize=5&amp;queryType=currentUser" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="user-activity" path="members/{UserId}/activity">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="cb7d40730a64458792894cec206da723" configuration="pageSize=5&amp;filterType=User&amp;includeSubGroups=False&amp;endlessScroll=True&amp;filterName0=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes0=filters%3D948477cb045b40778bf17ce1a091db11%26filters%3D44a697e2d1b348f6951945cfa2bfc4fd%26filters%3D0f7404b7d8f24a1b97c9175af1be4570%26filters%3D06336ce1600c40e4b32d97ff811ad7bd%26filters%3Dacf00be657174a25a17de2036c694444%26filters%3D0a680cf3f19648c592dbdf8cebe3fe92%26filters%3Decf7e9ef76f0447c9b252a531c7bb651%26filters%3Dedebd6ada45a470f89e63dfc31714bd6%26filters%3Da23334fb669a421d85e91945a7b80581%26filters%3D14656a259a034311b8e346cef57ac02b%26filters%3D333cc77c019644c5aefa6e35a0011ee8%26filters%3D276a9e5128394ae98291e3f24b49cbc4%26filters%3De9dd0cb7adf74518b0961b00f3f51246%26filters%3D3d10e9df357b42038f7d3bf15f60fd61%26filters%3Dcf26068cf6644050bf69f1d5c3e7eb1a%26filters%3D432f675c15bb429c98a99e99d539587b%26948477cb045b40778bf17ce1a091db11%3DAll%2644a697e2d1b348f6951945cfa2bfc4fd%3DAll%260f7404b7d8f24a1b97c9175af1be4570%3DAll%2606336ce1600c40e4b32d97ff811ad7bd%3DAll%26acf00be657174a25a17de2036c694444%3DAll%260a680cf3f19648c592dbdf8cebe3fe92%3DAll%26ecf7e9ef76f0447c9b252a531c7bb651%3DAll%26edebd6ada45a470f89e63dfc31714bd6%3DAll%26a23334fb669a421d85e91945a7b80581%3DAll%2614656a259a034311b8e346cef57ac02b%3DAll%26333cc77c019644c5aefa6e35a0011ee8%3DAll%26276a9e5128394ae98291e3f24b49cbc4%3DAll%26e9dd0cb7adf74518b0961b00f3f51246%3DAll%263d10e9df357b42038f7d3bf15f60fd61%3DAll%26cf26068cf6644050bf69f1d5c3e7eb1a%3DAll%26432f675c15bb429c98a99e99d539587b%3DAll&amp;filterUserActivityTypes0=filters%3D948477cb045b40778bf17ce1a091db11%26filters%3D0a680cf3f19648c592dbdf8cebe3fe92%26filters%3Decf7e9ef76f0447c9b252a531c7bb651%26filters%3Da23334fb669a421d85e91945a7b80581%26filters%3D14656a259a034311b8e346cef57ac02b%26filters%3D333cc77c019644c5aefa6e35a0011ee8%26filters%3D276a9e5128394ae98291e3f24b49cbc4%26filters%3De9dd0cb7adf74518b0961b00f3f51246%26filters%3D3d10e9df357b42038f7d3bf15f60fd61%26filters%3Dcf26068cf6644050bf69f1d5c3e7eb1a%26948477cb045b40778bf17ce1a091db11%3DUser%260a680cf3f19648c592dbdf8cebe3fe92%3DUser%26ecf7e9ef76f0447c9b252a531c7bb651%3DUser%26a23334fb669a421d85e91945a7b80581%3DUser%2614656a259a034311b8e346cef57ac02b%3DUser%26333cc77c019644c5aefa6e35a0011ee8%3DUser%26276a9e5128394ae98291e3f24b49cbc4%3DUser%26e9dd0cb7adf74518b0961b00f3f51246%3DUser%263d10e9df357b42038f7d3bf15f60fd61%3DUser%26cf26068cf6644050bf69f1d5c3e7eb1a%3DUser&amp;filterName1=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes1=&amp;filterUserActivityTypes1=&amp;filterName2=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes2=&amp;filterUserActivityTypes2=&amp;filterName3=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes3=&amp;filterUserActivityTypes3=&amp;filterName4=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes4=&amp;filterUserActivityTypes4=" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="user-friends" path="members/{UserId}/friends">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="edd96f71e18449ad8c8539f577e8b9fa" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+        </page>
+
+		<page name="user-bookmarks" path="members/{UserId}/bookmarks">
+			<constraints>
+				<constraint token="UserId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="c3b4a8778b3c4d988e25c8fe886da9e0" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group" path="groups/{GroupId}">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="19db5de0a1654ea594b3a1540cf3d553" configuration="" showHeader="false" cssClassAddition="" />
+				<contentFragment instanceIdentifier="cb7d40730a64458792894cec206da723" configuration="pageSize=5&amp;filterType=Group&amp;includeSubGroups=True&amp;endlessScroll=True&amp;filterName0=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes0=filters%3D948477cb045b40778bf17ce1a091db11%26filters%3D44a697e2d1b348f6951945cfa2bfc4fd%26filters%3D0f7404b7d8f24a1b97c9175af1be4570%26filters%3D06336ce1600c40e4b32d97ff811ad7bd%26filters%3Dacf00be657174a25a17de2036c694444%26filters%3D0a680cf3f19648c592dbdf8cebe3fe92%26filters%3Decf7e9ef76f0447c9b252a531c7bb651%26filters%3Dedebd6ada45a470f89e63dfc31714bd6%26filters%3Da23334fb669a421d85e91945a7b80581%26filters%3D14656a259a034311b8e346cef57ac02b%26filters%3D333cc77c019644c5aefa6e35a0011ee8%26filters%3D276a9e5128394ae98291e3f24b49cbc4%26filters%3De9dd0cb7adf74518b0961b00f3f51246%26filters%3D3d10e9df357b42038f7d3bf15f60fd61%26filters%3Dcf26068cf6644050bf69f1d5c3e7eb1a%26filters%3D432f675c15bb429c98a99e99d539587b%26948477cb045b40778bf17ce1a091db11%3DAll%2644a697e2d1b348f6951945cfa2bfc4fd%3DAll%260f7404b7d8f24a1b97c9175af1be4570%3DAll%2606336ce1600c40e4b32d97ff811ad7bd%3DAll%26acf00be657174a25a17de2036c694444%3DAll%260a680cf3f19648c592dbdf8cebe3fe92%3DAll%26ecf7e9ef76f0447c9b252a531c7bb651%3DAll%26edebd6ada45a470f89e63dfc31714bd6%3DAll%26a23334fb669a421d85e91945a7b80581%3DAll%2614656a259a034311b8e346cef57ac02b%3DAll%26333cc77c019644c5aefa6e35a0011ee8%3DAll%26276a9e5128394ae98291e3f24b49cbc4%3DAll%26e9dd0cb7adf74518b0961b00f3f51246%3DAll%263d10e9df357b42038f7d3bf15f60fd61%3DAll%26cf26068cf6644050bf69f1d5c3e7eb1a%3DAll%26432f675c15bb429c98a99e99d539587b%3DAll&amp;filterUserActivityTypes0=&amp;filterName1=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes1=&amp;filterUserActivityTypes1=&amp;filterName2=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes2=&amp;filterUserActivityTypes2=&amp;filterName3=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes3=&amp;filterUserActivityTypes3=&amp;filterName4=%24%7Bresource%3AfilterNameDefault%7D&amp;filterActivityTypes4=&amp;filterUserActivityTypes4=" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-requestmembership" path="groups/{GroupId}/requestmembership">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="fee03ac5964c4e4b832ed8fa466850ff" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-status-add" path="groups/{GroupId}/status/add">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="710ffc21661e48ca877df34037d90d94" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-members" path="groups/{GroupId}/members">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="1b64e4816d424c98b1321eff0f4bce59" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-subgrouplist" path="groups/{GroupId}/subgrouplist">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="60ac1bed4b9844b893a5c8d4497261c8" configuration="queryType=subGroups" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-tags" path="groups/{GroupId}/tags">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="0b4c87a9fc284dcb9a159138e5309bd0" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-tag" path="groups/{GroupId}/tag/{TagName}">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+                <contentFragment instanceIdentifier="0b4c87a9fc284dcb9a159138e5309bd0" configuration="" showHeader="false" cssClassAddition="" />
+                <contentFragment instanceIdentifier="26dca1e1a198492395e5a6b6f8a3d0ba" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-forums" path="groups/{GroupId}/forums">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="59feef7f27aa473180bb52071008660b" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forum" path="forums/{ForumId}">
+			<constraints>
+				<constraint token="ForumId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="c6af9d06240940beae71ade1bf750570" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forumthread" path="forumthreads/{ForumThreadId}">
+			<constraints>
+				<constraint token="ForumThreadId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="70eb79f7675b42078f78355560839784" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forum-addthread" path="forums/{ForumId}/add">
+			<constraints>
+				<constraint token="ForumId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="f50a8f2949d2477c9fb18ffa47f64cbf" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forumthread-edit" path="forumthreads/{ForumThreadId}/edit">
+			<constraints>
+				<constraint token="ForumThreadId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="f50a8f2949d2477c9fb18ffa47f64cbf" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forumthread-addreply" path="forumthreads/{ForumThreadId}/add">
+			<constraints>
+				<constraint token="ForumThreadId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="df209287ea8d4eccaf8cbb08a568c8f9" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forumreply-addreply" path="forumreplies/{ForumReplyId}/add">
+			<constraints>
+				<constraint token="ForumReplyId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="df209287ea8d4eccaf8cbb08a568c8f9" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="forumreply-edit" path="forumreplies/{ForumReplyId}/edit">
+			<constraints>
+				<constraint token="ForumReplyId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="df209287ea8d4eccaf8cbb08a568c8f9" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-wikis" path="groups/{GroupId}/wikis">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="a98046dcf707414f83425eabe5b3c393" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="wiki" path="wikis/{WikiId}">
+			<constraints>
+				<constraint token="WikiId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="b763444371d5475e8f7a9a5fa4d184b6" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="wikipage" path="wikipages/{WikiPageId}">
+			<constraints>
+				<constraint token="WikiPageId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="70bdfebf5e85427c8718871941e88347" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="wikipage-edit" path="wikipages/{WikiPageId}/edit">
+			<constraints>
+				<constraint token="WikiPageId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="c216859125284e928e76fa8e045bc9e4" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="wiki-addwikipage" path="wikis/{WikiId}/add">
+			<constraints>
+				<constraint token="WikiId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="c216859125284e928e76fa8e045bc9e4" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-galleries" path="groups/{GroupId}/media">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="dd90b05c6d334331b0046de16705e717" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="gallery" path="media/{GalleryId}">
+			<constraints>
+				<constraint token="GalleryId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="eb11e4073f3d4cc19b6327ecd54614d6" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="media" path="mediafiles/{MediaId}">
+			<constraints>
+				<constraint token="MediaId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="fad2d5f95f56467e885c112cbc6d47f2" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="media-edit" path="mediafiles/{MediaId}/edit">
+			<constraints>
+				<constraint token="MediaId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="0f8fca892498461cbb1609064576c23f" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="gallery-addmedia" path="media/{GalleryId}/add">
+			<constraints>
+				<constraint token="GalleryId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="0f8fca892498461cbb1609064576c23f" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="group-blogs" path="groups/{GroupId}/blogs">
+			<constraints>
+				<constraint token="GroupId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="e6cd209c87184394b6e2921019d204f6" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="blog" path="blogs/{BlogId}">
+			<constraints>
+				<constraint token="BlogId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="42d200b69fd4471b8e7dabce5fa81806" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="blogpost" path="blogposts/{BlogPostId}">
+			<constraints>
+				<constraint token="BlogPostId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="4f1a3378c9f84f129702bef3fab4eefc" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="blogpost-edit" path="blogposts/{BlogPostId}/edit">
+			<constraints>
+				<constraint token="BlogPostId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="48d3b46f0c164d9eb36ef4ab8dabaa2f" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="blog-addblogpost" path="blogs/{BlogId}/add">
+			<constraints>
+				<constraint token="BlogId" pattern="\d+" />
+			</constraints>
+			<contentFragments>
+				<contentFragment instanceIdentifier="48d3b46f0c164d9eb36ef4ab8dabaa2f" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="activitystory" path="activities/{ActivityStoryId}">
+			<contentFragments>
+				<contentFragment instanceIdentifier="6252ef55611d4b26955d695433396c27" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+		<page name="liker-list" path="likers">
+			<contentFragments>
+				<contentFragment instanceIdentifier="e0331369e7ad479c8c21b5bc625ca681" configuration="" showHeader="false" cssClassAddition="" />
+			</contentFragments>
+		</page>
+
+	</pages>
+</resources>

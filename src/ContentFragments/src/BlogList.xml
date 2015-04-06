@@ -1,0 +1,70 @@
+﻿<scriptedContentFragments>
+<scriptedContentFragment name="${resource:BlogList_Name}" version="7.0.0.1" instanceIdentifier="e6cd209c87184394b6e2921019d204f6" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="blog-list" >
+	<contentScript>
+		<![CDATA[
+
+#set ($groupId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GroupId')))
+#set ($showSubGroups = $core_v2_widget.GetBoolValue('groupAndSubGroups', true))
+#set ($pageSize = $core_v2_widget.GetIntValue('pageSize', 5))
+#set ($pageIndex = 0)
+
+#set($group = false)
+#set($group = $core_v2_group.Get("%{Id=$groupId}"))
+#if (!$group)
+	$core_v2_widget.Hide()
+#end
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($group.Url)">$group.Name</a>
+		<h1>$core_v2_language.GetResource('blogs')</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 40, 40, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")</div>
+</div>
+
+<div class="post-list blogs">
+	$core_v2_widget.ExecuteFile('list.vm')
+</div>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.blogList.register({
+		moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+				wrapper: '#$core_v2_widget.WrapperElementId',
+		pageSize: $pageSize,
+			showSubGroups: '$showSubGroups'
+		});
+	});
+})
+</script>
+		]]>
+	</contentScript>
+	<headerScript>
+	</headerScript>
+	<configuration>
+		<![CDATA[
+<propertyGroup id="options" resourceName="Options">
+	<property id="groupAndSubGroups" resourceName="groupAndSubGroups" dataType="bool" defaultValue="false" />
+	<property id="pageSize" resourceName="itemsToShow" dataType="int" defaultValue="5" />
+</propertyGroup>
+		]]>
+	</configuration>
+		<languageResources>
+<language key="en-us">
+	<resource name="BlogList_Name">Blog List</resource>
+	<resource name="options">Options</resource>
+	<resource name="itemsToShow">Number of results to display</resource>
+	<resource name="groupAndSubGroups">Show data from Group and all Subgroups</resource>
+	<resource name="blogs">Blogs</resource>
+	<resource name="no_blogs">There were no blogs to display.</resource>
+	<resource name="no_posts">No blog posts</resource>
+	<resource name="post_count">{0} blog post</resource>
+	<resource name="posts_count">{0} blog posts</resource>
+	<resource name="NA">N/A</resource>
+</language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Action Sheet</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta "mobile-web-app-status-bar-style" content="black" />
+    <meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+
+    <link rel="stylesheet" type="text/css" href="../../normalize.css" />
+    <link rel="stylesheet" type="text/css" href="screen.css" />
+<body>
+    <div id="wrapper">
+        <div id="content">
+            <p>Fusce lacinia odio et felis congue eleifend. Phasellus at est orci, eu dapibus massa. Nam id magna porta risus</p>
+            <a href="#" id="display-sheet">Display Actions</a>
+            <p>facilisis pretium non non augue. Integer sed felis non mi blandit posuere. Pellentesque habitant morbi tristique senectus et netus</p>
+            <p>et malesuada fames ac turpis egestas. Maecenas sit amet elit eget leo interdum congue sit amet et ipsum. Curabitur fringilla, tortor </p>
+            <p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+            <p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+            <p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+            <p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+            <p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+            <p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+            <p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+            <p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+            <p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+            <p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+            <p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+            <p>ut bibendum luctus, libero ligula adipiscing libero, quis eleifend mi justo ut nulla. Etiam in massa nisl, at venenatis est. Donec </p>
+            <p>scelerisque, odio sit amet gravida sollicitudin, orci dui dapibus lectus, ac tristique sapien orci a arcu. Duis sed imperdiet lectus. </p>
+            <p>Nam elementum adipiscing dui, nec placerat dolor suscipit vel. Aenean faucibus vestibulum magna sit amet fermentum.</p>
+        </div>
+    </div>
+
+    <script src="../../jquery.min.js"></script>
+    <script src="../../define.js"></script>
+    <script src="../../testlog.js"></script>
+    <script src="../../telligent.evolution.js"></script>
+    <script src="../scrollfix/scrollfix.js"></script>
+    <script src="../util/util.js"></script>
+    <script src="../sheet/sheet.js"></script>
+    <script src="../messaging/messaging.js"></script>
+    <script src="actionSheet.js"></script>
+    <script type="text/javascript">
+    require(['actionSheet', 'sheet', 'testlog', 'scrollfix','clickTranslation'],
+        function(ActionSheet, Sheet, log, scrollfix, clickTranslation, $, global, undef) {
+
+            clickTranslation.translate();
+
+            var wrapper = $('#wrapper'),
+                content = $('#content');
+
+            scrollfix.preventBounce(content);
+
+            var sheet = new Sheet({
+                parent: wrapper
+            });
+            var actionSheet = new ActionSheet({
+                sheet: sheet
+            })
+
+            var link1 = $('<a href="#" class="link">Link 1</a>'),
+                link2 = $('<a href="#" class="link">Link 2</a>'),
+                link3 = $('<a href="#" class="link">Link 3</a>'),
+                linkCancel = $('<a href="#" class="action-cancel">Cancel</a>');
+
+            link1.on('click', function(){
+                console.log("clicked 1");
+            })
+            link2.on('tap', function(){
+                console.log("tapped 2");
+            })
+
+            linkCancel.on('tap', function(){
+                actionSheet.hide();
+            });
+
+            $('#display-sheet').on('tap', function(){
+                actionSheet.show({
+                    links: [
+                        link1,
+                        link2,
+                        link3,
+                        linkCancel
+                    ]
+                })
+            });
+
+        }, jQuery, window);
+    </script>
+</body>
+</html>

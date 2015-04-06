@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Storage</title>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta "mobile-web-app-status-bar-style" content="black" />
+	<meta name="viewport" content="initial-scale = 1.0, user-scalable = no">
+<body>
+	<strong>Tests written to console...</strong>
+	<ul>
+		<li><a href="index.html">Reset Complete</a></li>
+		<li><a href="#" id="reset">Nav Reset</a></li>
+		<li><a href="#" id="back">Back</a></li>
+		<li><a href="#" id="refresh">Refresh</a></li>
+		<li><a href="#">Bogus</a></li>
+	</ul>
+
+	<script src="../../jquery.min.js"></script>
+	<script src="../../define.js"></script>
+	<script src="../../testlog.js"></script>
+	<script src="../../test.js"></script>
+	<script src="../url/url.js"></script>
+	<script src="../util/util.js"></script>
+	<script src="../environment/environment.js"></script>
+	<script src="../messaging/messaging.js"></script>
+	<script src="../navigationStack/navigationStack.js"></script>
+	<script src="navigator.js"></script>
+
+	<script type="text/javascript">
+	// mock transport
+	define('transport', function(){
+		return {
+			setCredentials: function(name, value) {
+			},
+			unSetCredentials: function() {
+			},
+			load: function(url) {
+				return $.Deferred(function(dfd) {
+					setTimeout(function(){
+						dfd.resolve('Content for ' + url + ' at ' + new Date());
+					}, 250);
+				}).promise();
+			},
+			configure: function(options) {
+			},
+			isNative: function() {
+				return false;
+			},
+			isLocal: function(url) {
+				return true;
+			}
+		}
+	});
+
+	// mock storage
+	define('storage', function(){
+		var items = {};
+		return {
+			set: function(key, obj) {
+				items[key] = obj;
+				localStorage.setItem(key, JSON.stringify(obj));
+			},
+			get: function(key) {
+				return items[key];
+			},
+			del: function(key) {
+				delete items[key];
+			},
+			debug: function() {
+				return items;
+			},
+			reset: function() {
+				items = {};
+			}
+		};
+	});
+
+	require(['navigator'], function(Navigator, $, global, undef) {
+
+		var nav = new Navigator({
+			defaultUrl: '/default/',
+			onLoad: function(url) {
+				console.log('onLoad: ' + url);
+				// return a promise
+				return $.Deferred(function(dfd) {
+					setTimeout(function(){
+						dfd.resolve('Content Loaded from ' + url + ' at ' + new Date());
+					}, 250);
+				}).promise();
+			},
+			onNavigated: function(url, content, direction) {
+				console.log('onNavigated to: ' + url);
+				console.log('  with content: ' + content);
+				console.log('  in direction: ' + direction);
+			}
+		});
+
+		setTimeout(function(){
+			nav.navigateTo('http://google.com?q=hello');
+		}, 1000);
+
+		$('#back').on('click', function(e){
+			e.preventDefault();
+			nav.navigateBack();
+		});
+		$('#refresh').on('click', function(e){
+			e.preventDefault();
+			nav.refresh();
+		});
+		$('#reset').on('click', function(e){
+			e.preventDefault();
+			nav.reset();
+		});
+
+	}, jQuery, window);
+	</script>
+</body>
+</html>

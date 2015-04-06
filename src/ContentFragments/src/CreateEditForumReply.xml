@@ -1,0 +1,143 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:CreateEditForumReply_Name}" version="7.0.0.1" instanceIdentifier="df209287ea8d4eccaf8cbb08a568c8f9" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="create-edit-forum-reply">
+		<contentScript>
+			<![CDATA[
+#set ($pageName = $mobile_v1_url.Current)
+#set ($mode = false)
+#set ($contentTypeId = $core_v2_forumThread.ContentTypeId)
+
+#set ($forumThread = false)
+#set ($forumThreadId = false)
+#set ($forumThreadId = $mobile_v1_urlToken.Value('ForumThreadId'))
+#if ($forumThreadId)
+	#set ($forumThreadId = $core_v2_utility.ParseInt($forumThreadId))
+#end
+
+#set ($forumReply = false)
+#set ($forumReplyId = false)
+#set ($forumReplyId = $mobile_v1_urlToken.Value('ForumReplyId'))
+#if ($forumReplyId)
+	#set ($forumReplyId = $core_v2_utility.ParseInt($forumReplyId))
+#end
+
+#if ($pageName == 'forumthread-addreply' || $pageName == 'forumreply-addreply')
+	#set ($mode = 'add')
+	#if (!$forumReplyId && !$forumThreadId)
+		$core_v2_widget.Hide()
+	#end
+	#if ($forumReplyId)
+		#set ($forumReply = $core_v2_forumReply.Get($forumReplyId))
+		#if (!$forumReply)
+			$core_v2_widget.Hide()
+		#end
+		#set ($forumThread = $core_v2_forumThread.Get($forumReply.ThreadId))
+		#set($forum = $core_v2_forum.Get($forumReply.ForumId))
+	#elseif ($forumThreadId)
+		#set ($forumThread = $core_v2_forumThread.Get($forumThreadId))
+		#if (!$forumThread)
+			$core_v2_widget.Hide()
+		#end
+		#set($forum = $core_v2_forum.Get($forumThread.ForumId))
+	#end
+#elseif($pageName == 'forumreply-edit')
+	#set ($mode = 'edit')
+	#if (!$forumReplyId)
+		$core_v2_widget.Hide()
+	#end
+	#set ($forumReply = $core_v2_forumReply.Get($forumReplyId))
+	#if (!$forumReply)
+		$core_v2_widget.Hide()
+	#end
+	#set ($forumThread = $core_v2_forumThread.Get($forumReply.ThreadId))
+	#set($forum = $core_v2_forum.Get($forumReply.ForumId))
+#end
+
+#set ($bodyId = $core_v2_widget.UniqueId('Body'))
+#set ($suggestAnswerId = $core_v2_widget.UniqueId('SuggestAnswer'))
+#set ($subscribeId = $core_v2_widget.UniqueId('Subscribe'))
+
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($forum.Group.Url)">$forum.Group.Name</a>
+		<a href="$core_v2_encoding.HtmlAttributeEncode($forum.Url)">$forum.Name</a><a href="$core_v2_encoding.HtmlAttributeEncode($forumThread.Url)">$forumThread.Subject</a>
+		#if ($mode == 'add')
+			<h1>$core_v2_language.GetResource('add_reply')</h1>
+		#else
+			<h1>$core_v2_language.GetResource('edit_reply')</h1>
+		#end
+	</div>
+</div>
+<fieldset>
+	## Body
+	<div class="form-field editor">
+		#set ($body = '')
+		#if ($forumReply && $mode == 'edit')
+			#set ($body = $forumReply.Body('raw'))
+		#end
+		$core_v2_editor.Render('PostBody', "%{Width='100%', Height='60px', Value=$body, ContentTypeId=$contentTypeId}")
+	</div>
+
+	## Suggest as answer
+	#set($replyToThread = false)
+	#if($forumReply)
+		#set($replyToThread = $core_v2_forumThread.Get($forumReply.ThreadId))
+	#else
+		#set($replyToThread = $forumThread)
+	#end
+	#if($replyToThread && $replyToThread.ThreadType == 'QuestionAndAnswer')
+		<div class="form-field checkbox inline-label">
+			<label for="$core_v2_encoding.HtmlAttributeEncode($suggestAnswerId)">$core_v2_language.GetResource('suggest_answer')</label>
+			<input id="$core_v2_encoding.HtmlAttributeEncode($suggestAnswerId)" type="checkbox" #if ($threadOrReply && $threadOrReply.IsSuggestedAnswer) checked="checked" #end />
+		</div>
+	#end
+
+	## Email Replies
+	#if ($mode == "add" && $core_v2_user.IsRegistered($core_v2_user.Accessing.Id))
+		<div class="form-field checkbox inline-label">
+			<label for="$core_v2_encoding.HtmlAttributeEncode($subscribeId)">$core_v2_language.GetResource('subscribe')</label>
+			<input id="$core_v2_encoding.HtmlAttributeEncode($subscribeId)" type="checkbox" checked/>
+		</div>
+	#end
+</fieldset>
+
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.createEditForumReply.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			forumId: $replyToThread.ForumId,
+			forumThreadId: #if ($replyToThread) $replyToThread.Id #else null #end,
+			forumReplyId: #if ($forumReplyId) $forumReplyId	#else null #end,
+			mode: '$core_v2_encoding.JavascriptEncode($mode)',
+			getBodyContent: function() { return $core_v2_editor.GetContentScript('PostBody') },
+			suggestAsAnswerInput: '#$core_v2_encoding.JavascriptEncode($suggestAnswerId)',
+			subscribeInput: '#$core_v2_encoding.JavascriptEncode($subscribeId)',
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			editLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('edit'))'
+		});
+
+		jQuery.telligent.evolution.mobile.refreshable(false);
+		jQuery.telligent.evolution.mobile.excludeFromHistory();
+	});
+})
+</script>
+		]]>
+		</contentScript>
+		<headerScript>
+			Placeholder
+		</headerScript>
+		<languageResources>
+		  <language key="en-us">
+			<resource name="CreateEditForumReply_Name">Create Edit Forum Reply</resource>
+			<resource name="reply">Reply...</resource>
+			<resource name="suggest_answer">Suggest as answer</resource>
+			<resource name="subscribe">Notify me about replies</resource>
+			<resource name="post">Reply</resource>
+			<resource name="edit">Edit</resource>
+			<resource name="add_reply">Reply</resource>
+			<resource name="edit_reply">Edit reply</resource>
+		  </language>
+		</languageResources>
+	</scriptedContentFragment>
+</scriptedContentFragments>

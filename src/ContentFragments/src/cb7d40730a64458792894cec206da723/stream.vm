@@ -1,0 +1,82 @@
+#set($stories = false)
+
+#set ($dateTimeRoundTripFormat = "yyyy-MM-ddTHH:mm:ss.fff")
+
+#if ($filterType == 'User')
+	#set ($filterActivityTypesProperty = "filterUserActivityTypes${filterIndex}")
+#else
+	#set ($filterActivityTypesProperty = "filterActivityTypes${filterIndex}")
+#end
+
+#set ($filterActivityTypes = false)
+#set ($filterActivityTypes = $core_v2_page.ParseQueryString($core_v2_widget.GetCustomValue($filterActivityTypesProperty,'')))
+#if ($filterType == 'User') ## user id
+	#set ($query = "%{ SortBy = 'Date', SortOrder = 'Descending', PageSize = $pageSize }")
+#elseif ($filterType == 'Group') ## group
+	#set ($currentGroup = false)
+	#set ($currentGroup = $core_v2_group.Get("%{Id=$groupId}"))
+	#set ($includeSubGroups = $core_v2_widget.GetBoolValue('includeSubGroups', false))
+	#set ($containerIds = "")
+	#if ($currentGroup)
+		#set ($containerIds = "$currentGroup.ContainerId")
+	#if ($includeSubGroups)
+		#set ($subGroups = $core_v2_group.List("%{ IncludeAllSubGroups = 'true', PageSize = 50, ParentGroupId = $currentGroup.Id, Permission = 'Group_ReadGroup' }"))
+		#foreach ($subGroup in $subGroups)
+			#set ($containerIds = "${containerIds},${subGroup.ContainerId}")
+		#end
+	#end
+	#end
+	#set ($query = "%{ SortBy = 'Date', SortOrder = 'Descending', PageSize = $pageSize, ContainerIds = $containerIds }")
+#else  ## site
+	#set ($query = "%{ SortBy = 'Date', SortOrder = 'Descending', PageSize = $pageSize }")
+#end
+
+#if (!$stories)
+	## include filters, if specified
+	#set ($hasUserFilters = false)
+	#if ($filterActivityTypes && $filterActivityTypes.Values('filters').Count > 0)
+		#set ($includedStoryTypes = false)
+		#set ($includedStoryTypes = $filterActivityTypes.Values('filters'))
+		#foreach ($storyType in $includedStoryTypes)
+			#set ($includedUsers = false)
+			#set ($includedUsers = $filterActivityTypes.Value($storyType))
+			#if ($includedUsers)
+				#set ($filterName = "_Filter_${storyType}")
+				#set ($hasUserFilters = true)
+				$query.Add($filterName, $includedUsers)
+			#end
+		#end
+	#end
+
+	#if ($hasUserFilters || $filterType == 'User')
+		#set($userId = false)
+		#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+		#if(!$userId || $userId <= 0)
+			#set($userId = $core_v2_user.Accessing.Id)
+		#end
+		$query.Add('UserId', $userId)
+	#end
+
+	## include date offset, if specified
+	#if ($endDate)
+		$query.Add('EndDate', $endDate)
+	#end
+
+	#set ($stories = $core_v2_activityStory.List($query))
+#end
+
+#set($hadDateFilter = false)
+#if (!$endDate)
+	#set($hadDateFilter = true)
+#end
+#set($endDate = false)
+
+#foreach($story in $stories)
+#each
+	#set ($endDate = $story.LastUpdate)
+	$core_v2_widget.ExecuteFile("story.vm")
+#nodata
+	<div id="${core_v2_widget.WrapperElementId}_message_norecords"><div class="message norecords">$core_v2_language.GetResource('no_messages')</div></div>
+#afterall
+	<div class="data" data-lastmessagedate="$core_v2_encoding.HtmlAttributeEncode($endDate.ToString($dateTimeRoundTripFormat))"></div>
+#end

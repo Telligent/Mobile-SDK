@@ -1,0 +1,179 @@
+<scriptedContentFragments>
+  <scriptedContentFragment name="${resource:UserBanner_Name}" version="7.0.0.1" instanceIdentifier="134293c01a044077869d09f20b300983" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="user-banner">
+	<contentScript>
+<![CDATA[
+
+#set ($userId = false)
+#set ($userId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('UserId')))
+#if (!$userId)
+	$core_v2_widget.Hide()
+#end
+#set ($user = false)
+#set ($user = $core_v2_user.Get("%{ Id = $userId }"))
+#if (!$user)
+	$core_v2_widget.Hide()
+#end
+
+<div class="banner">
+	<div class="avatar">
+		$!core_v2_ui.GetResizedImageHtml($user.AvatarUrl, 120, 120, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")
+	</div>
+	<h1>$!user.DisplayName</h1>
+
+	<div class="ui-links actions" data-maxlinks="0">
+		<ul>
+			#set ($accessingUser = $core_v2_user.Accessing)
+			#if ($accessingUser)
+				#if($user.Id != $accessingUser.Id)
+
+					#set ($friendship = $core_v2_friendship.Get("%{ UserId = $accessingUser.Id, FriendId = $user.Id }"))
+
+					## Currently friends or requesting
+					#if ($friendship && ($friendship.FriendshipState == 'Approved' || ($friendship.FriendshipState == 'Pending' && $friendship.Requestor.Id == $accessingUser.Id)))
+						#set ($cancelFriendshipLabel = $core_v2_language.GetResource('Unfriend'))
+						#set ($cancelType = 'unfriend')
+						#if ($friendship.FriendshipState == 'Pending')
+							#set ($cancelType = 'cancel')
+							#set ($cancelFriendshipLabel = $core_v2_language.GetResource('CancelRequest'))
+						#end
+						<li>
+							<a href="#" class="internal-link cancel-friendship" data-messagename="widget.${core_v2_widget.WrapperElementId}.cancel-friendship" data-requestorid="$accessingUser.Id" data-requesteeid="$user.Id" data-canceltype="$cancelType" >$cancelFriendshipLabel</a>
+						</li>
+
+					## Requestee - accept/reject pending friendship
+					#elseif($friendship && $friendship.FriendshipState == 'Pending' && $friendship.Recipient.Id == $accessingUser.Id)
+						<li>
+							<a href="#" class="internal-link accept-friendship" data-messagename="widget.${core_v2_widget.WrapperElementId}.accept-friendship" data-requestorid="$user.Id" data-requesteeid="$accessingUser.Id">$core_v2_language.GetResource('AcceptRequest')</a>
+						</li>
+						<li>
+							<a href="#" class="internal-link reject-friendship" data-messagename="widget.${core_v2_widget.WrapperElementId}.reject-friendship" data-requestorid="$user.Id" data-requesteeid="$accessingUser.Id">$core_v2_language.GetResource('RejectRequest')</a>
+						</li>
+
+					## Not friends, allow requesting
+					#else
+						## Determine if a custom friend request messgae is needed.
+						## This can be known by whether there would otherwise be a desktop modal URL available to provide one
+						#set ($friendRequestUrl = false)
+						#set ($friendRequestUrl = $core_v2_urls.RequestFriendship($user.Id))
+						#if ($friendRequestUrl)
+							## set friend request URL to use a specific mobile page
+							#set ($friendRequestUrl = $mobile_v1_url.Format('user-requestfriendship', $user.Id))
+						#end
+
+						#set ($defaultRequestMessage = '')
+						#set ($defaultRequestMessage = $core_v2_configuration.DefaultFriendshipRequestMessage)
+						#set ($defaultRequestMessage = $core_v2_ui.FormatHtmlAsText($defaultRequestMessage))
+
+						<li>
+							<a href="#"
+								class="internal-link request-friendship"
+								data-messagename="widget.${core_v2_widget.WrapperElementId}.request-friendship"
+								data-requestorid="$accessingUser.Id"
+								data-requesteeid="$user.Id"
+								data-requesturl=#if($friendRequestUrl) "$core_v2_encoding.HtmlAttributeEncode($friendRequestUrl)" #else "" #end
+								data-requestmessage="$core_v2_encoding.HtmlAttributeEncode($defaultRequestMessage)">
+								$core_v2_language.GetResource('RequestFriendship')
+							</a>
+						</li>
+					#end
+
+					#set ($follows = 'false')
+					#set ($followLink = $core_v2_language.GetResource('Follow'))
+					#if ($core_v2_following.Get($accessingUser.Id, "%{ FollowingId = $userId }"))
+						#set ($follows = 'true')
+						#set ($followLink = $core_v2_language.GetResource('Unfollow'))
+					#end
+					<li>
+						<a href="#" data-messagename="widget.${core_v2_widget.WrapperElementId}.user-follow" data-followerId="$accessingUser.Id" data-followingId="$userId" data-follows="$follows">$followLink</a>
+					</li>
+
+					#if ($core_v2_urls.AddConversation($userId))
+						<li><a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('conversation-add-touser', $userId))">$core_v2_language.GetResource('SendMessage')</a></li>
+					#end
+				#end
+				<li class="action-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+				<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+
+			#end
+		</ul>
+	</div>
+
+	#set ($navigationItems = $core_v2_customNavigation.FromWidget($core_v2_utility.ParseGuid('19e9689493a4449eb063e61762da2ea4'), 'navigation', "%{Url=$core_v2_page.Url, UserId=$user.Id}"))
+	#foreach ($navigationItem in $navigationItems)
+		#beforeall
+		<div class="ui-links applications" data-minlinks="100" data-animate="true">
+			<ul>
+		#each
+			#if ($mobile_v1_url.IsRedirected($navigationItem.Url) && $navigationItem.CssClass != 'internal-link view-user-profile')
+				<li>
+					<a href="$core_v2_encoding.HtmlAttributeEncode($navigationItem.Url)">$navigationItem.Label</a>
+				</li>
+			#end
+		#afterall
+				<li class="application-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+				<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+			</ul>
+		</div>
+	#end
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.userBanner.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			followText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Follow'))',
+			unfollowText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Unfollow'))',
+			followedText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Followed'))',
+			unfollowedText: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('Unfollowed'))',
+
+			messageFollow: 'widget.${core_v2_widget.WrapperElementId}.user-follow',
+			messageRequestFriendship: 'widget.${core_v2_widget.WrapperElementId}.request-friendship',
+			messageCancelFriendship: 'widget.${core_v2_widget.WrapperElementId}.cancel-friendship',
+			messageAcceptFriendship: 'widget.${core_v2_widget.WrapperElementId}.accept-friendship',
+			messageRejectFriendship: 'widget.${core_v2_widget.WrapperElementId}.reject-friendship',
+
+			unfriendConfirmation: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UnfriendConfirmation'))',
+			cancelConfirmation: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('CancelRequestConfirmation'))',
+			unfriendComplete: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('UnfriendComplete'))',
+			cancelComplete: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('CancelRequestComplete'))',
+			acceptComplete: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('AcceptComplete'))',
+			rejectComplete: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('RejectComplete'))',
+			requestComplete: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('RequestComplete'))'
+		});
+	});
+});
+</script>
+
+]]>
+	</contentScript>
+	<headerScript></headerScript>
+	<configuration></configuration>
+	<languageResources>
+		<language key="en-us">
+			<resource name="UserBanner_Name">User Banner</resource>
+			<resource name="SendMessage">Send a Message</resource>
+			<resource name="Follow">Start Following</resource>
+			<resource name="Unfollow">Stop Following</resource>
+			<resource name="Followed">Following started</resource>
+			<resource name="Unfollowed">Following stopped</resource>
+			<resource name="RequestFriendship">Request friendship</resource>
+			<resource name="Unfriend">Unfriend</resource>
+			<resource name="CancelRequest">Cancel friendship request</resource>
+			<resource name="AcceptRequest">Accept friend request</resource>
+			<resource name="RejectRequest">Reject friend request</resource>
+			<resource name="cancel">Cancel</resource>
+			<resource name="more">More</resource>
+			<resource name="UnfriendConfirmation">Are you sure you want to unfriend this person?</resource>
+			<resource name="CancelRequestConfirmation">Are you sure you want to cancel this friendship request?</resource>
+			<resource name="UnfriendComplete">Unfriended</resource>
+			<resource name="CancelRequestComplete">Request canceled</resource>
+			<resource name="AcceptComplete">Friendship accepted</resource>
+			<resource name="RejectComplete">Friendship rejected</resource>
+			<resource name="RequestComplete">Friendship requested</resource>
+		</language>
+	</languageResources>
+  </scriptedContentFragment>
+</scriptedContentFragments>

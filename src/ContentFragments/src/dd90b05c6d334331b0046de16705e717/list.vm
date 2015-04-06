@@ -1,0 +1,27 @@
+#set($galleries = $core_v2_gallery.List("%{GroupId=$groupId,PageIndex=$pageIndex,PageSize=5}"))
+#if($galleries.TotalsCount == 1)
+	#set($oneWiki = $core_v2_gallery.Get("%{GroupId = $groupId}"))
+	##$mobile_v1_url.Format('wiki',$oneWiki.Id)
+#end
+#foreach($gallery in $galleries)
+#each
+	<div class="post-list-item content-item gallery" data-targeturl="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('gallery', $gallery.Id))">
+		<div class="post without-avatar">
+			<div class="details">
+				#if($gallery.LatestPostDate)<div class="date">$core_v2_language.FormatAgoDate($gallery.LatestPostDate)</div>#end
+			</div>
+			<div class="content">
+				<a href="$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Format('gallery', $gallery.Id))">$gallery.Name</a>
+				<div>$!gallery.Description</div>
+			</div>
+		</div>
+	</div>
+#nodata
+	<div class="post-list-item content-item gallery"><div class="message norecords">$core_v2_language.GetResource('no_gallery')</div></div>
+#afterall
+	#set ($hasMore = false)
+	#if ($galleries.TotalCount > (($galleries.PageIndex + 1) * $galleries.PageSize))
+		#set($hasMore = true)
+	#end
+	<div class="data" #if($hasMore)data-hasmore="true"#end></div>
+#end

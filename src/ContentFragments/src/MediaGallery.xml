@@ -1,0 +1,78 @@
+<scriptedContentFragments>
+	<scriptedContentFragment name="${resource:MediaGallery_Name}" version="7.0.0.1" instanceIdentifier="eb11e4073f3d4cc19b6327ecd54614d6" isCacheable="true" varyCacheByUser="true" showHeaderByDefault="false" cssClass="media-gallery">
+		<contentScript>
+		<![CDATA[
+#set($galleryId = false)
+#set($galleryId = $core_v2_utility.ParseInt($mobile_v1_urlToken.Value('GalleryId')))
+#if (!$galleryId)
+	$core_v2_widget.Hide()
+#end
+
+#set ($accessingUser = $core_v2_user.Accessing)
+#set ($accessingUserIsRegistered = false)
+#if ($core_v2_user.IsRegistered($accessingUser.Id))
+	#set ($accessingUserIsRegistered = true)
+#end
+
+#set($gallery = $core_v2_gallery.Get("%{Id=$galleryId}"))
+#set($group = $gallery.Group)
+<div class="banner condensed">
+	<div class="context">
+		<a href="$core_v2_encoding.HtmlAttributeEncode($gallery.Group.Url)">$gallery.Group.Name</a>
+		<h1>$gallery.Name</h1>
+	</div>
+	<div class="avatar">$core_v2_ui.GetResizedImageHtml($group.AvatarUrl, 40, 40, "%{ alt = $group.Name, ResizeMethod = 'ZoomAndCrop' }")</div>
+	<div class="ui-links actions" data-maxlinks="0">
+		<ul>
+			#set ($bookmarkableContentId = $gallery.ApplicationId)
+			#set ($bookmarkableContentTypeId = $core_v2_gallery.ContentTypeId)
+			#if ($core_v2_bookmark.SupportsBookmarks($bookmarkableContentTypeId) && $core_v2_bookmark.CanBookmark($bookmarkableContentId, $bookmarkableContentTypeId) && $core_v2_bookmark.CanUnBookmark($bookmarkableContentId, $bookmarkableContentTypeId))
+				<li>$core_v2_ui.Bookmark($bookmarkableContentId, $bookmarkableContentTypeId)</li>
+			#end
+			<li class="action-more"><a href="#" data-more>$core_v2_language.GetResource('more')</a></li>
+			<li><a href="#" data-cancel>$core_v2_language.GetResource('cancel')</a></li>
+		</ul>
+	</div>
+</div>
+
+## load and render media galleries
+<div class="post-list galleries">
+	#set($pageIndex = 0)
+	$core_v2_widget.ExecuteFile("list.vm")
+</div>
+
+## render client script inline since it's short and to avoid extra http requests
+<script>$core_v2_widget.RenderFile('ui.js')</script>
+<script>
+jQuery(function(){
+	jQuery.telligent.evolution.messaging.subscribe('mobile.content.rendered', function(){
+		jQuery.telligent.evolution.widgets.mediaGallery.register({
+			wrapper: '#$core_v2_widget.WrapperElementId',
+			moreUrl: '$core_v2_encoding.JavascriptEncode($core_v2_widget.GetExecutedFileUrl('more.vm'))',
+			GalleryId: $galleryId,
+			postLabel: '$core_v2_encoding.JavascriptEncode($core_v2_language.GetResource('post'))',
+			postUrl: '$core_v2_encoding.JavascriptEncode($mobile_v1_url.Format('gallery-addmedia', $galleryId))',
+			canPost: #if($core_v2_nodePermission.Get("mediagalleries", $galleryId, "MediaGallery_CreatePost").IsAllowed) true#else false#end
+		});
+	});
+})
+</script>
+		]]>
+
+		</contentScript>
+		<headerScript>
+		</headerScript>
+
+		<languageResources>
+		  <language key="en-us">
+			<resource name="MediaGallery_Name">Media Gallery</resource>
+			<resource name="media_gallery">Media Galleries</resource>
+			<resource name="no_gallery">There are no files in this gallery.</resource>
+			<resource name="post">New</resource>
+			<resource name="cancel">Cancel</resource>
+			<resource name="more">More</resource>
+		  </language>
+		</languageResources>
+
+	</scriptedContentFragment>
+</scriptedContentFragments>

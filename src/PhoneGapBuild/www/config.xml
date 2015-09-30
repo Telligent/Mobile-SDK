@@ -15,7 +15,7 @@
         Example
     </author>
 
-    <preference name="phonegap-version" value="3.3.0" />
+    <preference name="phonegap-version" value="cli-5.2.0" />
     <preference name="target-device" value="universal" />
     <preference name="fullscreen" value="false" />
     <preference name="webviewbounce" value="false" />
@@ -38,24 +38,25 @@
 	<gap:platform name="ios" />
 	<gap:platform name="android" />
 
-    <gap:plugin name="org.apache.cordova.dialogs" />
-    <gap:plugin name="org.apache.cordova.network-information" />
-    <gap:plugin name="org.apache.cordova.splashscreen" />
-    <gap:plugin name="org.apache.cordova.inappbrowser" />
-    <gap:plugin name="org.apache.cordova.device-orientation" />
-    <gap:plugin name="org.apache.cordova.device" />
-    <gap:plugin name="org.apache.cordova.camera" />
-    <gap:plugin name="org.apache.cordova.file-transfer" />
-    <gap:plugin name="org.apache.cordova.globalization" />
-    <gap:plugin name="com.phonegap.plugins.pushplugin" version="2.1.1" />
-	<gap:plugin name="nl.x-services.plugins.launchmyapp" version="3.1.1">
-		<param name="URL_SCHEME" value="comexamplemobile" />
-	</gap:plugin>
-	<gap:plugin name="dk.vertica.keyboard" version="0.1.2" />
-	<gap:plugin name="dk.vertica.taptoscroll" version="0.1.0" />
-    <gap:plugin name="com.phonegap.plugin.statusbar" version="1.1.0" />
+  <gap:plugin name="cordova-plugin-dialogs" source="npm" />
+  <gap:plugin name="cordova-plugin-network-information" source="npm" />
+  <gap:plugin name="cordova-plugin-splashscreen" source="npm" />
+  <gap:plugin name="cordova-plugin-inappbrowser" source="npm" />
+  <gap:plugin name="cordova-plugin-device-orientation" source="npm" />
+  <gap:plugin name="cordova-plugin-device" source="npm" />
+  <gap:plugin name="cordova-plugin-camera" source="npm" />
+  <gap:plugin name="cordova-plugin-file-transfer" source="npm" />
+  <gap:plugin name="cordova-plugin-globalization" source="npm" />
+  <gap:plugin name="com.phonegap.plugins.pushplugin" version="2.5.0" />
+  <gap:plugin name="nl.x-services.plugins.launchmyapp" version="3.2.0">
+    <param name="URL_SCHEME" value="comexamplemobile" />
+  </gap:plugin>
+  <gap:plugin name="com.ionic.keyboard" version="1.0.3" />
+  <!-- gap:plugin name="dk.vertica.taptoscroll" version="0.1.0" /-->
+  <!-- disabled to resolve issues in iOS9 -->
 
-	<icon gap:platform="ios" src="res/icon/ios/icon-320.png" width="320" height="320" />
+
+  <icon gap:platform="ios" src="res/icon/ios/icon-320.png" width="320" height="320" />
 	<icon gap:platform="ios" src="res/icon/ios/icon-76-2x.png" width="152" height="152" />
 	<icon gap:platform="ios" src="res/icon/ios/icon-72-2x.png" width="144" height="144" />
 	<icon gap:platform="ios" src="res/icon/ios/icon-60-2x.png" width="120" height="120" />

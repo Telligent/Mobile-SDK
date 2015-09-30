@@ -11,7 +11,7 @@ namespace Telligent.Evolution.Mobile.Web
 	public class StyleSheets : IHttpHandler
 	{
 		IMobileConfiguration Configuration = ServiceLocator.Get<IMobileConfiguration>();
-		private readonly string CacheKey = "StyleSheets";
+		private readonly string CacheKey = "StyleSheets-";
 		
 		#region IHttpHandler Members
 
@@ -29,8 +29,9 @@ namespace Telligent.Evolution.Mobile.Web
 				lastModifiedDateUtc = DateTime.UtcNow;
 
 			context.Response.ContentType = "text/css";
+            var cacheKey = CacheKey + host.AbsoluteUrl("~/");
 
-			var cachedStyleSheet = host.Cache.Get(CacheKey) as CachedStyleSheet;
+			var cachedStyleSheet = host.Cache.Get(cacheKey) as CachedStyleSheet;
 			if (cachedStyleSheet == null || cachedStyleSheet.LastModifiedDateUtc < lastModifiedDateUtc)
 			{
 				cachedStyleSheet = new CachedStyleSheet();
@@ -74,7 +75,7 @@ namespace Telligent.Evolution.Mobile.Web
 					}
 				}
 
-				host.Cache.Put(CacheKey, cachedStyleSheet, 30 * 60);
+				host.Cache.Put(cacheKey, cachedStyleSheet, 30 * 60);
 			}
 
 			context.Response.Cache.SetAllowResponseInBrowserHistory(true);

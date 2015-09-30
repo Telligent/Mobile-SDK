@@ -674,6 +674,7 @@ body {
 	font-size: @font-size;
 	background-color: @color-shell-background;
 	font-family: @shell-font-family;
+    position: static !important;
 }
 a {
 	-webkit-tap-highlight-color:rgba(0,0,0,0);
@@ -1179,11 +1180,6 @@ embed, object, video, audio {
 				overflow-x: hidden;
 				-webkit-transform: translate3d(0,0,0);
 			}
-			// work around webkit rendering issue
-			.slideable * {
-				-webkit-transform: translate3d(0,0,0);
-			}
-
 			.content-fragment {
 				background-color: @color-content-background;
 			}

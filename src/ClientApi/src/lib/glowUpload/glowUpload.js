@@ -30,7 +30,7 @@
 ///
 define('glowUpload', ['environment'],
 function(environment, $, global, undef) {
-	if (environment.type != 'native' || environment.device != 'android' || !global.navigator.camera || !global.FileTransfer) {
+	if (environment.type != 'native' || !global.navigator.camera || !global.FileTransfer) {
 		return;
 	}
 

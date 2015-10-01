@@ -8,7 +8,7 @@ src/TelligentMobile/
 src/Community.Zimbra/
 src/PhoneGapBuildTest/
 srcPhoneGapBuild/www.zip
-
+src/pacakages/
 # User-specific files
 *.suo
 *.user

@@ -85,7 +85,11 @@ jQuery('#$core_v2_widget.WrapperElementId a.delete').each(function(){
 });
 </script>
 
-$mobile_v1_ui.Comments($story.ContentId, $story.ContentTypeId, "%{ CanFlagAsAbusive = $accessingUserIsRegistered, AccessingUserId = $accessingUser.Id }")
+#set($commentOptions = "%{ CanFlagAsAbusive = $accessingUserIsRegistered, AccessingUserId = $accessingUser.Id }")
+#if ($story.TypeId)
+	$commentOptions.Add('TypeId', $story.TypeId)
+#end
+$mobile_v1_ui.Comments($story.ContentId, $story.ContentTypeId, $commentOptions)
 
 		]]>
 		</contentScript>

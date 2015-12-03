@@ -26,6 +26,11 @@
 #set ($widgetUniqueStoryId = "${core_v2_widget.WrapperElementId}_story_${story.StoryId}")
 #set ($storyType = $story.StoryTypeId)
 
+#set ($storyUrl = $story.Content.Url)
+#if ($story.TypeId)
+	#set($storyUrl = $mobile_v1_url.Format('activitystory', $story.StoryId))
+#end
+
 <div id="$!widgetUniqueStoryId" class="post-list-item content-item activity-story $!storyType content-type-${story.ContentTypeId}"
 	data-authorid="$!latestActor.User.Id"
 	data-activityid="$!story.StoryId"
@@ -34,7 +39,7 @@
 	data-contentid="$!story.ContentId"
 	data-contenttypeid="$!story.ContentTypeId"
 	data-typeid="$!story.TypeId"
-	data-targeturl="$core_v2_encoding.HtmlAttributeEncode($story.Content.Url)">
+	data-targeturl="$core_v2_encoding.HtmlAttributeEncode($storyUrl)">
 
 	<div class="post activity">
 		<div class="avatar">
@@ -67,12 +72,16 @@
 				## Comments
 				#if ($commentsSupported)
 					#set ($commentCount = 0)
-					#set ($comments = $core_v2_comments.List("%{ PageIndex = 0, PageSize = 1, ContentId = $story.ContentId, ContentTypeId = $story.ContentTypeId }"))
+					#set ($commentOptions = "%{ PageIndex = 0, PageSize = 1, ContentId = $story.ContentId, ContentTypeId = $story.ContentTypeId }")
+					#if ($story.TypeId)
+						$commentOptions.Add('CommentType', $story.TypeId)
+					#end
+					#set ($comments = $core_v2_comments.List($commentOptions))
 					#set ($commentCount = $comments.TotalCount)
 					<li class="action-comment">
-						<a class="comment" href="$core_v2_encoding.HtmlAttributeEncode($story.Content.Url)">
+						<a class="comment" href="$core_v2_encoding.HtmlAttributeEncode($storyUrl)">
 						#if ($commentCount == 0)
-											$core_v2_language.GetResource('comment')
+							$core_v2_language.GetResource('comment')
 						#elseif ($commentCount == 1)
 							$core_v2_language.FormatString($core_v2_language.GetResource('comment_format'), $commentCount)
 						#else

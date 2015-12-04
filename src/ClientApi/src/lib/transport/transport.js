@@ -16,7 +16,7 @@
  *  transport.adjustUrl(url) // adjusts a local Evo URL to a proxied remote URL
  *
  */
-define('transport', ['storage'], function(storage, $, global, undef){
+define('transport', ['storage'], function(storage, $, global, undef) {
 
 	var nativeClient = false,
 		nativeDomain,
@@ -28,13 +28,9 @@ define('transport', ['storage'], function(storage, $, global, undef){
 	}
 
 	function normalizeBase(url) {
-		url = url.indexOf(baseUrl) === 0
-			? url.substr(baseUrl.length)
-			: url;
-		url = url.indexOf(basePath) === 0
-			? url.substr(basePath.length)
-			: url;
-		if(url.indexOf('/') == 0)
+		url = url.indexOf(baseUrl) === 0 ? url.substr(baseUrl.length) : url;
+		url = url.indexOf(basePath) === 0 ? url.substr(basePath.length) : url;
+		if (url.indexOf('/') == 0)
 			url = url.substr(1);
 		return url;
 	}
@@ -53,10 +49,11 @@ define('transport', ['storage'], function(storage, $, global, undef){
 	}
 
 	function determineBasePath() {
-		if(baseUrl.lastIndexOf('/') != baseUrl.length - 1)
+		if (baseUrl.lastIndexOf('/') != baseUrl.length - 1)
 			baseUrl = baseUrl + '/';
 
-		basePath = baseUrl.substring(8 + baseUrl.substring(8).lastIndexOf('/', baseUrl.length - 10))
+		basePath = baseUrl.substring(8 + baseUrl.substring(8).lastIndexOf('/',
+			baseUrl.length - 10))
 	}
 
 	return {
@@ -88,6 +85,26 @@ define('transport', ['storage'], function(storage, $, global, undef){
 		},
 		adjustUrl: function(localUrl) {
 			return load('callback.ashx?redirect=' + encodeURIComponent(localUrl));
+		},
+		getExternalUrl: function(url) {
+			return $.Deferred(function(d) {
+				var normalized = normalizeBase(url);
+				if (!isAbsolute(normalized)) {
+					if (normalized.indexOf('rsw.ashx/rscf_p/') == 0) {
+						load('callback.ashx?redirect=' + encodeURIComponent(normalized.substr(normalized.indexOf('~/'))))
+							.done(function(data) {
+								d.resolve(data);
+							})
+							.fail(function() {
+								d.reject();
+							});
+					} else {
+						d.resolve(null);
+					}
+				} else {
+					d.resolve(null);
+				}
+			}).promise();
 		}
 	};
 

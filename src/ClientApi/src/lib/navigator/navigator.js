@@ -240,7 +240,7 @@ define('navigator',
 			a.setAttribute('href', url);
 			a.setAttribute('target', '_blank');
 
-			var event = document.createEvent('HTMLEvents')
+			var event = document.createEvent('HTMLEvents');
 			event.initEvent('click', true, true);
 			a.dispatchEvent(event);
 		// otherwise, redirect
@@ -254,13 +254,27 @@ define('navigator',
 	function determineRedirect(context, url) {
 		return $.Deferred(function(dfd){
 			var redirectData = context.redirectCache.get(url);
-			if(!redirectData) {
+			if(!redirectData || !redirectData.created || (new Date()).getTime() - redirectData.created > 4 * 60 * 1000) { // only allow items to last 4 minutes to prevent conflicts with OAuth signed redirects
 				transport.load(url).done(function(data){
-					context.redirectCache.set(url, data);
-					dfd.resolve(data);
+					if (data && data.redirectUrl) {
+						url = data.redirectUrl;
+					}
+					if (!transport.isLocal(url)) {
+						transport.getExternalUrl(url)
+							.done(function(data2) {
+								context.redirectCache.set(url, $.extend({}, data2 || data, { created: (new Date()).getTime() }));
+								dfd.resolve(data2 || data);
+							})
+							.fail(function() {
+								dfd.reject();
+							});
+					} else {
+						context.redirectCache.set(url, $.extend({}, data, { created: (new Date()).getTime() }));
+						dfd.resolve(data);
+					}
 				}).fail(function(){
 					dfd.reject();
-				})
+				});
 			} else {
 				dfd.resolve(redirectData);
 			}

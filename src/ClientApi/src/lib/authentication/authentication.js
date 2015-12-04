@@ -97,7 +97,10 @@ define('authentication', ['transport', 'environment', 'messaging'],
 					var authUrl = transport.baseUrl() + 'callback.ashx?login=login&state=' + encodeURIComponent(state);
 					// homescreened web app
 					if (environment.type == 'webapp') {
-						var headerHeight = ($('#header').is(':visible') ? $('#header').outerHeight() : 0);
+						var headerHeight = ($('#header').is(':visible') ? $('#header').height() : 0);
+						if ($('body.ios.native, body.ios.webapp').length > 0) {
+							headerHeight += 20; // account for status bar offset
+						}
 						var modalBrowser = $('<div></div>').css({
 							position: 'fixed',
 							width: $(document).width() + 'px',

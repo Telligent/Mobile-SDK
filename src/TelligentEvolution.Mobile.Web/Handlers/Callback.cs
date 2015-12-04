@@ -104,15 +104,15 @@ namespace Telligent.Evolution.Mobile.Web
 				{
 					var host = Host.Get(Host.DefaultId) as Host;
 					var url = context.Request.QueryString["redirect"];
-					string redirectUrl = null;
 					bool redirected = host.TryGetNonQualifiedEvolutionRedirectUrl(url, out redirectedUrl);
 				}
 				catch (Exception) { }
-				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
-				context.Response.ContentType = "application/json";
-				context.Response.Write("{\"redirectUrl\":\"");
-				context.Response.Write(System.Web.HttpUtility.JavaScriptStringEncode(redirectedUrl));
-				context.Response.Write("\"}");
+
+                context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+                context.Response.ContentType = "application/json";
+                context.Response.Write("{\"redirectUrl\":\"");
+                context.Response.Write(System.Web.HttpUtility.JavaScriptStringEncode(redirectedUrl));
+                context.Response.Write("\"}");
 			}
 		}
 

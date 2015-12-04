@@ -3050,7 +3050,7 @@ jQuery(function(){
 		#end
 
 		&lt;li&gt;
-			&lt;a href="#" onclick="window.open('$core_v2_encoding.HtmlAttributeEncode($mobile_v1_url.Redirect($core_v2_mediaUrls.DownloadMedia($media.Id, false), "%{Target='Host'}"))', '_system'); return false;" class="internal-link download"&gt;
+			&lt;a href="$core_v2_encoding.HtmlAttributeEncode($media.File.FileUrl)" class="internal-link download"&gt;
 				#if ($media.File.IsRemoteAttachment)
 					$core_v2_language.GetResource("MediaGalleries_Button_View")
 				#else

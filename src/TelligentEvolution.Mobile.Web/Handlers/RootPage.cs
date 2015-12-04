@@ -26,7 +26,7 @@ namespace Telligent.Evolution.Mobile.Web
 			context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 			context.Response.ContentType = "text/html";
 
-			var siteName = "Zimbra Mobile";
+			var siteName = "Telligent Community Mobile";
 			var siteInfo = host.GetRestEndpointXml("info.xml");
 			if (siteInfo != null && siteInfo.Element("InfoResult") != null && siteInfo.Element("InfoResult").Element("SiteName") != null)
 			{

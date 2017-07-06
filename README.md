@@ -1,4 +1,6 @@
-# Telligent Community Mobile SDK
+# THE TELLIGENT MOBILE MOBILE SDK IS NO LONGER SUPPORTED.
+
+## Telligent Community Mobile SDK
 ###What is the Telligent Community Mobile SDK?
 The Telligent Community Mobile SDK includes both a production ready iOS app and Android app for accessing Telligent Community 8.0+ communities. The Telligent Community Mobile SDK is built using [Apache Cordova](https://cordova.apache.org/) and includes full source code.
 
